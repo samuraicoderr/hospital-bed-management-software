@@ -155,7 +155,6 @@ MY_APPS = [
     "src.users",
     "src.files",
     "src.common",
-    "src.organizations",
 ]
 
 INSTALLED_APPS = (

@@ -26,7 +26,6 @@ from src.users.urls import (
 )
 from src.common.urls import common_router
 from src.notifications.urls import notification_router
-from src.organizations.urls import org_router
 from src.reset_password.routes import password_reset_router
 from .lib.django.superlazyroutertools import super_lazy_path
 
@@ -41,7 +40,6 @@ sub_routers = [
     [notification_router, "notifications"],
     # [common_router, "common"],
     [password_reset_router, "password_reset", "password_reset"],
-    [org_router, "organizations"],
 ]
 
 
