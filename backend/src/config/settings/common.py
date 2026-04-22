@@ -1,4 +1,5 @@
 import os
+from sys import monitoring
 import sentry_sdk
 
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -151,10 +152,23 @@ else:
 # ============================================================
 
 MY_APPS = [
-    "src.notifications",
-    "src.users",
-    "src.files",
-    "src.common",
+    "src.users",            # # User management, roles, authentication (OAuth2/SAML/MFA)
+    "src.common",           # Shared utilities, custom exceptions, base models
+    "src.files",            # File uploads, media management, document templates    
+    "src.notifications",    # SMS, email, and in-app alert triggers and templates
+    "src.realtime",         # WebSocket consumers (Django Channels), event broadcasting
+    "src.audit",            # Immutable audit log for all status changes, logins, config changes
+
+    "src.dashboard",        # Operational KPI aggregation (ALOS, occupancy, backlog)
+    "src.beds",             # Bed inventory, hierarchy (hospital → ward → room → bed), status management, equipment tags
+    "src.patients",         # Patient records, MRN, clinical requirements, admission history
+    "src.admissions",       # Admission creation, bed assignment logic, pre-admission reservations
+    "src.discharges",       # Discharge initiation, turnover tracking
+    "src.housekeeping",     # Cleaning task creation, assignment, SLA tracking, status updates
+    "src.organizations",    # Hospital and multi-facility hierarchy, org-level settings
+    "src.reports",          # Scheduled/exportable reports (census, utilization, turnover)
+    "src.integrations",     # FHIR/HL7 adapters, ADT feed handlers, webhook management
+    "src.alerts",           # Threshold monitoring (ICU %, SLA breaches, queue depth)
 ]
 
 INSTALLED_APPS = (

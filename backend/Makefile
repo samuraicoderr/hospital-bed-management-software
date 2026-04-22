@@ -94,7 +94,7 @@ superuser:
 migrate:
 	uv run python manage.py migrate
 
-add-app:
+new-app:
 	uv run python scripts/create_django_app.py
 
 
