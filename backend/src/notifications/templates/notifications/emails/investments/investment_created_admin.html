@@ -1,0 +1,260 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+  <title>New Investment Application - {{ app.name }} Admin</title>
+  <!--[if mso]>
+  <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  <style>
+    table {border-collapse: collapse;}
+    .spacer,.divider {mso-line-height-rule: exactly;}
+  </style>
+  <![endif]-->
+  <style>
+    @media (max-width: 600px) {
+      .sm-w-full {
+        width: 100% !important;
+      }
+
+      .sm-px-24 {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      .sm-py-32 {
+        padding-top: 32px !important;
+        padding-bottom: 32px !important;
+      }
+    }
+  </style>
+</head>
+
+<body
+  style="margin: 0; width: 100%; padding: 0; word-break: break-word; -webkit-font-smoothing: antialiased; background-color: #f8f9fa;">
+  <div role="article" aria-roledescription="email" aria-label="New Investment Application Submitted" lang="en">
+    <!-- Preheader -->
+    <div style="display: none;">New investment application from {{ user.get_full_name|default:user.email }} - ₦{{ investment.principal_amount|floatformat:2|intcomma }}</div>
+
+    <!-- Outer Table -->
+    <table
+      style="width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+      cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td align="center" style="background-color: #f8f9fa; padding: 24px 0;">
+
+          <!-- Main Container -->
+          <table class="sm-w-full"
+            style="width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"
+            cellpadding="0" cellspacing="0" role="presentation">
+
+            <!-- Header with Logo -->
+            <tr>
+              <td style="background-color: #1e3a5f; padding: 32px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td align="center">
+                      {% if app.logo_url %}
+                      <img src="{{ app.logo_url }}" alt="{{ app.name }}"
+                        style="max-width: 120px; height: auto; display: block; margin-bottom: 12px;">
+                      {% endif %}
+                      <p style="margin: 0; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">
+                        Admin Notification
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Alert Banner -->
+            <tr>
+              <td style="background-color: #fef3c7; padding: 16px 48px; border-bottom: 1px solid #fcd34d;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td style="width: 24px; vertical-align: middle;">
+                      <span style="font-size: 20px;">&#128200;</span>
+                    </td>
+                    <td style="padding-left: 12px; vertical-align: middle;">
+                      <p style="margin: 0; font-size: 14px; font-weight: 600; color: #92400e;">
+                        New Investment Application Requires Review
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Main Content -->
+            <tr>
+              <td class="sm-px-24" style="padding: 40px 48px;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+
+                  <!-- Summary Header -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <h2 style="margin: 0 0 8px; font-size: 24px; font-weight: 700; color: #1a1a1a;">
+                        Investment #{{ investment.id|truncatechars:13 }}
+                      </h2>
+                      <p style="margin: 0; font-size: 14px; color: #718096;">
+                        Submitted by {{ user.get_full_name|default:user.email }}
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Amount Highlight -->
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation"
+                        style="width: 100%; background: linear-gradient(135deg, #0d4f4f 0%, #1e3a5f 100%); border-radius: 12px;">
+                        <tr>
+                          <td style="padding: 28px 32px; text-align: center;">
+                            <p style="margin: 0 0 4px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">
+                              Principal Amount
+                            </p>
+                            <p style="margin: 0; font-size: 36px; font-weight: 700; color: #ffffff;">
+                              ₦{{ investment.principal_amount|floatformat:2|intcomma }}
+                            </p>
+                            {% if investment.product %}
+                            <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.8);">
+                              {{ investment.product.name }} &middot; {{ investment.product.interest_rate|floatformat:2 }}% p.a.
+                            </p>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Details Table -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation"
+                        style="width: 100%; background-color: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+
+                        <tr>
+                          <td style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+                            <p style="margin: 0; font-size: 12px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">
+                              &#128100; Investor Details
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 16px 20px;">
+                            <p style="margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #1a1a1a;">
+                              {{ user.get_full_name|default:"N/A" }}
+                            </p>
+                            <p style="margin: 0 0 4px; font-size: 13px; color: #4a5568;">{{ user.email }}</p>
+                            {% if user.phone_number %}
+                            <p style="margin: 0; font-size: 13px; color: #4a5568;">{{ user.phone_number }}</p>
+                            {% endif %}
+                          </td>
+                        </tr>
+
+                        {% if investment.product.tenure_months %}
+                        <tr>
+                          <td style="padding: 16px 20px; border-top: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 14px; color: #718096;">Tenure</td>
+                                <td style="font-size: 14px; color: #1a1a1a; font-weight: 500; text-align: right;">
+                                  {{ investment.product.tenure_months }} month{% if investment.product.tenure_months != 1 %}s{% endif %}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+
+                        {% if investment.product.risk_level %}
+                        <tr>
+                          <td style="padding: 16px 20px; border-top: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 14px; color: #718096;">Risk Level</td>
+                                <td style="font-size: 14px; color: #1a1a1a; font-weight: 500; text-align: right;">
+                                  {{ investment.product.risk_level }}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Action Button -->
+                  <tr>
+                    <td style="padding-bottom: 32px; text-align: center;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          <td style="border-radius: 6px; background-color: #0d4f4f;">
+                            <a href="{{ app.admin_url|default:'#' }}" target="_blank"
+                              style="display: inline-block; padding: 16px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none;">
+                              Review Investment &rarr;
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Divider -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <div style="height: 1px; background-color: #e2e8f0;"></div>
+                    </td>
+                  </tr>
+
+                  <!-- Footer Note -->
+                  <tr>
+                    <td>
+                      <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #a0aec0; text-align: center;">
+                        This is an automated notification from {{ app.name }}. Please do not reply to this email.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color: #1e3a5f; padding: 24px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td>
+                      <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.6);">
+                        &copy; {% now "Y" %} {{ company.name|default:app.name }}. All rights reserved.
+                      </p>
+                      {% if app.tws_link %}
+                      <p style="margin: 8px 0 0; font-size: 11px; color: rgba(255,255,255,0.4);">
+                        Powered by <a href="{{ app.tws_link }}" target="_blank" style="color: rgba(255,255,255,0.6);">Jowis Studio</a>
+                      </p>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+          </table>
+          <!-- End Main Container -->
+
+        </td>
+      </tr>
+    </table>
+    <!-- End Outer Table -->
+
+  </div>
+</body>
+
+</html>

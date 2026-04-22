@@ -1,0 +1,580 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --brand-green: #0F6E56;
+  --brand-green-light: #E1F5EE;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.logo-text-font {
+  font-family: var(--font-logo);
+  color: #16614e;
+  letter-spacing: 0.9px;
+}
+
+/* ─── Loading screen animations ─── */
+
+@keyframes logo-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes loading-bar {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.animate-logo-pulse {
+  animation: logo-pulse 2s ease-in-out infinite;
+}
+
+.animate-loading-bar {
+  animation: loading-bar 1.8s ease-in-out infinite;
+}
+
+.animate-fade-out {
+  animation: fade-out 0.4s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out forwards;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ─── Scrollbar utilities ─── */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
+}
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 3px;
+}
+
+/* ─── Staggered animation delay utilities ─── */
+
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
+
+
+
+
+
+@layer base {
+  /* =========================================================================
+     1. ROOT DEFAULTS
+     ========================================================================= */
+
+  *,
+  *::before,
+  *::after {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* =========================================================================
+     2. INTERACTIVE ELEMENT CURSOR BEHAVIOR
+     ========================================================================= */
+
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"],
+  input[type="file"],
+  input[type="file"]::file-selector-button,
+  input[type="image"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"],
+  input[type="color"],
+  label[for],
+  select,
+  summary,
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="switch"],
+  [role="checkbox"],
+  [role="radio"],
+  [role="treeitem"],
+  [tabindex]:not([tabindex="-1"]),
+  [onclick] {
+    cursor: pointer;
+  }
+
+  /* =========================================================================
+     3. DISABLED STATES
+     ========================================================================= */
+
+  button:disabled,
+  input:disabled,
+  select:disabled,
+  textarea:disabled,
+  [role="button"][aria-disabled="true"],
+  [role="link"][aria-disabled="true"],
+  [role="tab"][aria-disabled="true"],
+  [role="menuitem"][aria-disabled="true"],
+  [role="option"][aria-disabled="true"],
+  [role="switch"][aria-disabled="true"],
+  [role="checkbox"][aria-disabled="true"],
+  [role="radio"][aria-disabled="true"],
+  [aria-disabled="true"],
+  [disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /*  Allow pointer-events on disabled buttons specifically for tooltip wrappers
+      while keeping them non-functional */
+  fieldset:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  fieldset:disabled * {
+    pointer-events: none;
+  }
+
+  /* =========================================================================
+     4. FOCUS STATES — ACCESSIBILITY FIRST
+     ========================================================================= */
+
+  /* Remove default outline only when :focus-visible is supported */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  /* Refined focus ring for specific interactive elements */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  summary:focus-visible,
+  [role="button"]:focus-visible,
+  [role="link"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [role="switch"]:focus-visible,
+  [role="checkbox"]:focus-visible,
+  [role="radio"]:focus-visible,
+  [tabindex]:not([tabindex="-1"]):focus-visible {
+    outline: 2px solid #0F6E56;
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* High-contrast mode support */
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline: 2px solid Highlight;
+      outline-offset: 2px;
+    }
+  }
+
+  /* =========================================================================
+     5. DEFAULT TRANSITIONS FOR INTERACTIVITY
+     ========================================================================= */
+
+  button,
+  a,
+  input,
+  select,
+  textarea,
+  summary,
+  input[type="file"]::file-selector-button,
+  [role="button"],
+  [role="link"],
+  [role="tab"],
+  [role="switch"],
+  [role="menuitem"],
+  [tabindex]:not([tabindex="-1"]) {
+    transition-property: color, background-color, border-color, outline-color,
+      text-decoration-color, fill, stroke, opacity, box-shadow, transform,
+      filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
+
+  /* =========================================================================
+     6. HOVER STATES
+     ========================================================================= */
+
+  @media (hover: hover) and (pointer: fine) {
+    button:not(:disabled):hover,
+    input[type="button"]:not(:disabled):hover,
+    input[type="submit"]:not(:disabled):hover,
+    input[type="reset"]:not(:disabled):hover,
+    [role="button"]:not([aria-disabled="true"]):hover {
+      filter: brightness(0.95);
+    }
+
+    a:hover {
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+    }
+
+    summary:hover {
+      filter: brightness(0.95);
+    }
+  }
+
+  /* =========================================================================
+     7. ACTIVE / PRESSED STATES
+     ========================================================================= */
+
+  button:not(:disabled):active,
+  input[type="button"]:not(:disabled):active,
+  input[type="submit"]:not(:disabled):active,
+  input[type="reset"]:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active,
+  summary:active {
+    transform: scale(0.98);
+  }
+
+  /* =========================================================================
+     8. BUTTON RESET IMPROVEMENTS
+     ========================================================================= */
+
+  button,
+  [role="button"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* =========================================================================
+     9. LINK DEFAULTS
+     ========================================================================= */
+
+  a {
+    color: inherit;
+    text-decoration: inherit;
+    touch-action: manipulation;
+  }
+
+  a:not([class]) {
+    text-decoration: underline;
+    text-decoration-color: currentColor;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  /* =========================================================================
+     10. FORM ELEMENT REFINEMENTS
+     ========================================================================= */
+
+  input,
+  textarea,
+  select {
+    font: inherit;
+    color: inherit;
+    letter-spacing: inherit;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: inherit;
+    opacity: 0.5;
+  }
+
+  /* Autofill styling consistency */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-text-fill-color: inherit;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /* File input button */
+  input[type="file"]::file-selector-button {
+    -webkit-appearance: none;
+    appearance: none;
+    font: inherit;
+    color: inherit;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    margin-inline-end: 0.75rem;
+    border-radius: 4px;
+    touch-action: manipulation;
+  }
+
+  /* Search input — remove extra browser chrome */
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Number input — remove spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  /* =========================================================================
+     11. SUMMARY / DETAILS
+     ========================================================================= */
+
+  summary {
+    display: list-item;
+    list-style: none;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  summary::marker {
+    content: "";
+  }
+
+  /* =========================================================================
+     12. SELECTION
+     ========================================================================= */
+
+  ::selection {
+    background-color: #0F6E56;
+    color: #ffffff;
+  }
+
+  /* =========================================================================
+     13. SCROLLBAR BASELINE (Webkit + Firefox)
+     ========================================================================= */
+
+  * {
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: rgba(0, 0, 0, 0.15);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+
+  /* =========================================================================
+     14. MEDIA DEFAULTS
+     ========================================================================= */
+
+  img,
+  svg,
+  video,
+  canvas,
+  audio,
+  iframe,
+  embed,
+  object {
+    display: block;
+    max-width: 100%;
+  }
+
+  img,
+  video {
+    height: auto;
+  }
+
+  /* =========================================================================
+     15. LOADING SCREEN ANIMATIONS
+     ========================================================================= */
+
+  @keyframes loading-bar {
+    0% {
+      width: 0%;
+      margin-left: 0%;
+    }
+    50% {
+      width: 60%;
+      margin-left: 20%;
+    }
+    100% {
+      width: 0%;
+      margin-left: 100%;
+    }
+  }
+
+  @keyframes logo-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.08);
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+}
+
+@layer components {
+  /* =========================================================================
+     ANIMATION UTILITY CLASSES
+     ========================================================================= */
+
+  .animate-loading-bar {
+    animation: loading-bar 1.4s ease-in-out infinite;
+  }
+
+  .animate-logo-pulse {
+    animation: logo-pulse 1.8s ease-in-out infinite;
+  }
+
+  .animate-fade-out {
+    animation: fade-out 0.4s ease-out forwards;
+  }
+}

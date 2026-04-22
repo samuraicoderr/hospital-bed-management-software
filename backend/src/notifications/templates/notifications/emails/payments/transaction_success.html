@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Transaction Notification</title>
+    <!--[if mso]>
+    <style type="text/css">
+        body, table, td {font-family: Arial, Helvetica, sans-serif !important;}
+    </style>
+    <![endif]-->
+</head>
+<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    
+    <!-- Wrapper Table -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                
+                <!-- Main Container -->
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); max-width: 600px; width: 100%;">
+                    
+                    <!-- Header -->
+                    <tr>
+                        <td align="center" style="padding: 32px 40px 24px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px 12px 0 0;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600; letter-spacing: -0.5px;">
+                                Transaction {{ txn.status|title }}
+                            </h1>
+                        </td>
+                    </tr>
+                    
+                    <!-- Status Icon -->
+                    <tr>
+                        <td align="center" style="padding: 32px 40px 0;">
+                            {% if txn.status == 'success' %}
+                            <div style="width: 64px; height: 64px; background-color: #d1fae5; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            {% elif txn.status == 'pending' %}
+                            <div style="width: 64px; height: 64px; background-color: #fef3c7; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            {% elif txn.status == 'failed' %}
+                            <div style="width: 64px; height: 64px; background-color: #fee2e2; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            {% else %}
+                            <div style="width: 64px; height: 64px; background-color: #e0e7ff; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M13 16H12V12H11M12 8H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="#6366f1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    
+                    <!-- Greeting -->
+                    <tr>
+                        <td style="padding: 0 40px;">
+                            <p style="margin: 0 0 24px; color: #111827; font-size: 16px; line-height: 1.5;">
+                                Hello <strong>{{ user.get_name }}</strong>,
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Amount Display -->
+                    <tr>
+                        <td align="center" style="padding: 0 40px 24px;">
+                            <div style="background-color: #f0fdf4; border: 1px solid #d1fae5; border-radius: 8px; padding: 24px; text-align: center;">
+                                <p style="margin: 0 0 8px; color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    {{ txn.transaction_type|title }} Amount
+                                </p>
+                                <p style="margin: 0; color: #10b981; font-size: 32px; font-weight: 700; letter-spacing: -1px;">
+                                    ₦{{ txn.amount|floatformat:2 }}
+                                </p>
+                                {% if txn.fees > 0 %}
+                                <p style="margin: 8px 0 0; color: #6b7280; font-size: 13px;">
+                                    Fee: ₦{{ txn.fees|floatformat:2 }} • Net: ₦{{ txn.net_amount|floatformat:2 }}
+                                </p>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Transaction Details -->
+                    <tr>
+                        <td style="padding: 0 40px 32px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-top: 1px solid #e5e7eb; padding-top: 24px;">
+                                
+                                <tr>
+                                    <td style="padding: 8px 0;">
+                                        <span style="color: #6b7280; font-size: 14px;">Reference</span>
+                                    </td>
+                                    <td align="right" style="padding: 8px 0;">
+                                        <span style="color: #111827; font-size: 14px; font-family: monospace;">{{ txn.reference }}</span>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td style="padding: 8px 0;">
+                                        <span style="color: #6b7280; font-size: 14px;">Date</span>
+                                    </td>
+                                    <td align="right" style="padding: 8px 0;">
+                                        <span style="color: #111827; font-size: 14px;">{{ txn.created_at|date:"M d, Y" }} at {{ txn.created_at|time:"H:i" }}</span>
+                                    </td>
+                                </tr>
+                                
+                                <tr>
+                                    <td style="padding: 8px 0;">
+                                        <span style="color: #6b7280; font-size: 14px;">Wallet</span>
+                                    </td>
+                                    <td align="right" style="padding: 8px 0;">
+                                        <span style="color: #111827; font-size: 14px;">{{ wallet.wallet_name }}</span>
+                                    </td>
+                                </tr>
+                                
+                                {% if txn.narration %}
+                                <tr>
+                                    <td colspan="2" style="padding: 12px 0 0;">
+                                        <div style="background-color: #f9fafb; border-radius: 6px; padding: 12px;">
+                                            <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.5;">
+                                                <strong style="color: #111827;">Note:</strong> {{ txn.narration }}
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                
+                                {% if txn.sender_bank_account_name %}
+                                <tr>
+                                    <td colspan="2" style="padding: 16px 0 0;">
+                                        <p style="margin: 0 0 8px; color: #111827; font-size: 14px; font-weight: 600;">Sender Details</p>
+                                        <div style="background-color: #f9fafb; border-radius: 6px; padding: 12px;">
+                                            <p style="margin: 0 0 4px; color: #111827; font-size: 13px;">{{ txn.sender_bank_account_name }}</p>
+                                            <p style="margin: 0 0 4px; color: #6b7280; font-size: 13px;">{{ txn.sender_bank_account_number }}</p>
+                                            <p style="margin: 0; color: #6b7280; font-size: 13px;">{{ txn.sender_bank }}</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Current Balance -->
+                    <tr>
+                        <td style="padding: 0 40px 32px;">
+                            <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 8px; padding: 20px; text-align: center;">
+                                <p style="margin: 0 0 4px; color: rgba(255,255,255,0.9); font-size: 13px;">Current Balance</p>
+                                <p style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">₦{{ wallet.balance|floatformat:2 }}</p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 32px 40px; background-color: #f9fafb; border-radius: 0 0 12px 12px; border-top: 1px solid #e5e7eb;">
+                            <p style="margin: 0 0 8px; color: #6b7280; font-size: 13px; text-align: center;">
+                                Need help? Contact our support team
+                            </p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px; text-align: center;">
+                                © 2024 Your Company. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                </table>
+                
+            </td>
+        </tr>
+    </table>
+    
+</body>
+</html>

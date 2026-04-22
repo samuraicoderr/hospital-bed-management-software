@@ -1,0 +1,102 @@
+from django.conf import settings
+from django.urls import path, re_path, include, reverse_lazy
+from django.conf.urls.static import static
+from django.views.generic.base import RedirectView
+from django.urls import reverse_lazy
+from django.conf import settings
+
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework.routers import DefaultRouter
+
+from src.users.auth import (
+    TokenPairView__FirstFactor,
+    TokenPairView__SecondFactor,
+    RefreshTokenView,
+)
+from src.files.urls import files_router
+from src.users.urls import (
+    users_router, 
+    auth_router,
+    oauth_router,
+)
+from src.common.urls import common_router
+from src.notifications.urls import notification_router
+from src.organizations.urls import org_router
+from src.reset_password.routes import password_reset_router
+from .lib.django.superlazyroutertools import super_lazy_path
+
+
+# ==================================================================================================
+
+sub_routers = [
+    [users_router, "user"],
+    [auth_router, "auth"],
+    [oauth_router, "oauth"],
+    # [files_router, "files"],
+    [notification_router, "notifications"],
+    # [common_router, "common"],
+    [password_reset_router, "password_reset", "password_reset"],
+    [org_router, "organizations"],
+]
+
+
+urlpatterns = [
+    # api
+    *super_lazy_path("api/v1/", sub_routers, use_tag_as_default_namespace=False),
+]
+
+
+django_urls = [
+    # auth
+    path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
+    # Legacy login endpoints
+    # path(
+    #     "api/v1/login/token/1stfactor/",
+    #     TokenPairView__FirstFactor.as_view(),
+    #     name="token_obtain_pair",
+    # ),
+    # path(
+    #     "api/v1/login/token/2stfactor/",
+    #     TokenPairView__SecondFactor.as_view(),
+    #     name="token_obtain_pair2",
+    # ),
+    path(
+        "api/v1/auth/login/refresh_token/", RefreshTokenView.as_view(), name="token_refresh"
+    ),
+    # admin panel
+    # path('admin/', admin.site.urls),    # disable the django admin site
+    # path('jet/', include('jet.urls')),  # Updated from url() to path()
+    # summernote editor
+    # path("summernote/", include("django_summernote.urls")),
+]
+
+swagger_urls = [
+    
+    # OpenAPI schema endpoint
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    
+    # Swagger UI
+    path(
+        "api/docs/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    
+    # Redoc UI (optional)
+    path("api/redocs/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("health/", include("health_check.urls")),  # Updated
+    
+    # the 'api-root' from django rest-frameworks default router
+    re_path(r"^$", RedirectView.as_view(url=reverse_lazy("api-root"), permanent=False)),
+] 
+
+
+urlpatterns += django_urls + swagger_urls
+# if settings.DEBUG:
+#     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

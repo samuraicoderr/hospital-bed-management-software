@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+  <title>Your Account Recovery Codes</title>
+  <!--[if mso]>
+  <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  <style>
+    table {border-collapse: collapse;}
+    .spacer,.divider {mso-line-height-rule: exactly;}
+  </style>
+  <![endif]-->
+  <style>
+    @media (max-width: 600px) {
+      .sm-w-full {
+        width: 100% !important;
+      }
+
+      .sm-px-24 {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      .sm-py-32 {
+        padding-top: 32px !important;
+        padding-bottom: 32px !important;
+      }
+
+      .sm-text-14 {
+        font-size: 14px !important;
+      }
+    }
+  </style>
+</head>
+
+<body
+  style="margin: 0; width: 100%; padding: 0; word-break: break-word; -webkit-font-smoothing: antialiased; background-color: #f8f9fa;">
+  <div role="article" aria-roledescription="email" aria-label="Your Account Recovery Codes" lang="en">
+    <!-- Preheader -->
+    <div style="display: none;">Save these recovery codes in a secure location. You'll need them to access your account if you lose your 2FA device.</div>
+
+    <!-- Outer Table -->
+    <table
+      style="width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+      cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td align="center" style="background-color: #f8f9fa; padding: 24px 0;">
+
+          <!-- Main Container -->
+          <table class="sm-w-full"
+            style="width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"
+            cellpadding="0" cellspacing="0" role="presentation">
+
+            <!-- Header with Logo -->
+            <tr>
+              <td style="background-color: #0d4f4f; padding: 40px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td align="center">
+                      {% if app.logo_url %}
+                      <img src="{{ app.logo_url }}" alt="{{ app.name }}"
+                        style="max-width: 150px; height: auto; display: block;">
+                      {% else %}
+                      <h1 style="margin: 0; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                        {{ app.name }}</h1>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Hero Section -->
+            <tr>
+              <td style="background-color: #0d4f4f; padding: 0 48px 48px;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td>
+                      <h2
+                        style="margin: 0 0 16px; font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1.3;">
+                        Recovery Codes Generated
+                      </h2>
+                      <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #e6f2f2;">
+                        Save these codes securely - they're your backup access to your account
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Main Content -->
+            <tr>
+              <td class="sm-px-24" style="padding: 48px;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+
+                  <!-- Personalized Greeting -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <p style="margin: 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">
+                        Hi {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %},
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Main Message -->
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #4a5568;">
+                        Your account recovery codes have been generated. These codes can be used to access your account if you lose access to your two-factor authentication device.
+                      </p>
+                      <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #4a5568;">
+                        <strong>Each code can only be used once.</strong> Keep them in a safe, secure location.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Critical Warning -->
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation"
+                        style="width: 100%; background-color: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 4px;">
+                        <tr>
+                          <td style="padding: 20px 24px;">
+                            <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #92400e;">
+                              ⚠️ Important: Save These Codes Now
+                            </p>
+                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #78350f;">
+                              This is the only time these codes will be shown. Download, print, or copy them to a secure password manager immediately. You won't be able to view them again.
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- 2FA QR Code Section -->
+                  {% if qr_code_url %}
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation"
+                        style="width: 100%; background-color: #f0fdf4; border: 2px solid #10b981; border-radius: 8px;">
+                        <tr>
+                          <td style="padding: 32px 24px; text-align: center;">
+                            <p style="margin: 0 0 8px; font-size: 16px; font-weight: 600; color: #065f46;">
+                              Set Up Your Authenticator App
+                            </p>
+                            <p style="margin: 0 0 24px; font-size: 14px; line-height: 1.6; color: #047857;">
+                              Scan this QR code with your authenticator app (Google Authenticator, Authy, Microsoft Authenticator, etc.)
+                            </p>
+                            
+                            <!-- QR Code Image -->
+                            <div style="background-color: #ffffff; padding: 24px; border-radius: 8px; display: inline-block; border: 1px solid #d1fae5;">
+                              <img src="{{ qr_code_url }}" alt="2FA QR Code" 
+                                style="width: 200px; height: 200px; display: block; margin: 0 auto;">
+                            </div>
+
+                            {% if setup_key %}
+                            <p style="margin: 24px 0 8px; font-size: 13px; font-weight: 600; color: #065f46;">
+                              Can't scan? Enter this key manually:
+                            </p>
+                            <p style="margin: 0; font-size: 16px; font-weight: 600; color: #059669; font-family: 'Courier New', Courier, monospace; letter-spacing: 2px;">
+                              {{ setup_key }}
+                            </p>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- Recovery Codes Display -->
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation"
+                        style="width: 100%; background-color: #f7fafc; border: 2px solid #0d4f4f; border-radius: 8px;">
+                        <tr>
+                          <td style="padding: 32px 24px;">
+                            <p style="margin: 0 0 16px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: center; text-transform: uppercase; letter-spacing: 0.5px;">
+                              Your Recovery Codes
+                            </p>
+                            
+                            <!-- Recovery Codes Grid -->
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              {% for code in recovery_codes %}
+                              <tr>
+                                <td style="padding: 8px 16px; text-align: center; background-color: #ffffff; border: 1px solid #e2e8f0; {% if forloop.first %}border-radius: 4px 4px 0 0;{% endif %} {% if forloop.last %}border-radius: 0 0 4px 4px;{% endif %}">
+                                  <span class="sm-text-14" style="font-size: 16px; font-weight: 600; color: #0d4f4f; font-family: 'Courier New', Courier, monospace; letter-spacing: 2px;">
+                                    {{ code }}
+                                  </span>
+                                </td>
+                              </tr>
+                              {% endfor %}
+                            </table>
+
+                            <p style="margin: 20px 0 0; font-size: 12px; color: #718096; text-align: center;">
+                              Generated on {{ generated_date|default:"today" }} • {{ recovery_codes|length }} codes total
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Download/Print Instructions -->
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <p style="margin: 0 0 16px; font-size: 15px; font-weight: 600; color: #1a1a1a;">
+                        How to Save Your Recovery Codes:
+                      </p>
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                        <tr>
+                          <td style="padding: 12px 0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="width: 32px; vertical-align: top;">
+                                  <div style="width: 24px; height: 24px; background-color: #0d4f4f; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: #ffffff; font-size: 12px; font-weight: 700; text-align: center; margin-left: auto; margin-right: auto; display: block;">1</span>
+                                  </div>
+                                </td>
+                                <td style="padding-left: 12px;">
+                                  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
+                                    <strong>Copy to a password manager</strong> like 1Password, LastPass, or Bitwarden
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 12px 0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="width: 32px; vertical-align: top;">
+                                  <div style="width: 24px; height: 24px; background-color: #0d4f4f; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: #ffffff; font-size: 12px; font-weight: 700;  text-align: center; margin-left: auto; margin-right: auto; display: block;">2</span>
+                                  </div>
+                                </td>
+                                <td style="padding-left: 12px;">
+                                  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
+                                    <strong>Print this email</strong> and store it in a secure physical location
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 12px 0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation">
+                              <tr>
+                                <td style="width: 32px; vertical-align: top;">
+                                  <div style="width: 24px; height: 24px; background-color: #0d4f4f; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: #ffffff; font-size: 12px; font-weight: 700; text-align: center; margin-left: auto; margin-right: auto; display: block;">3</span>
+                                  </div>
+                                </td>
+                                <td style="padding-left: 12px;">
+                                  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #4a5568;">
+                                    <strong>Write them down</strong> and keep in a safe or secure drawer
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- How to Use -->
+                  <tr>
+                    <td
+                      style="padding: 24px; background-color: #f7fafc; border-left: 4px solid #0d4f4f; border-radius: 4px; margin-bottom: 32px;">
+                      <p style="margin: 0 0 12px; font-size: 15px; font-weight: 600; color: #1a1a1a;">
+                        When to Use Recovery Codes:
+                      </p>
+                      <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #4a5568;">
+                        • You've lost or replaced your 2FA device
+                      </p>
+                      <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #4a5568;">
+                        • Your authenticator app was deleted or reset
+                      </p>
+                      <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #4a5568;">
+                        • You can't receive 2FA codes for any reason
+                      </p>
+                      <p style="margin: 16px 0 0; font-size: 13px; line-height: 1.6; color: #718096;">
+                        Simply enter one of these codes when prompted for your 2FA code during login. Remember: each code works only once.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Security Best Practices -->
+                  <tr>
+                    <td style="padding: 32px 0;">
+                      <table cellpadding="0" cellspacing="0" role="presentation"
+                        style="width: 100%; background-color: #fff5f5; border-left: 4px solid #e53e3e; border-radius: 4px;">
+                        <tr>
+                          <td style="padding: 20px 24px;">
+                            <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #c53030;">
+                              🔒 Security Best Practices
+                            </p>
+                            <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #742a2a;">
+                              • Never share these codes with anyone, including {{ app.name }} support
+                            </p>
+                            <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #742a2a;">
+                              • Don't store them in unsecured locations like note-taking apps or photos
+                            </p>
+                            <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #742a2a;">
+                              • Generate new codes if you suspect they've been compromised
+                            </p>
+                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #742a2a;">
+                              • Keep track of which codes you've used
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Divider -->
+                  <tr>
+                    <td style="padding: 32px 0;">
+                      <div style="height: 1px; background-color: #e2e8f0;"></div>
+                    </td>
+                  </tr>
+
+                  <!-- Regenerate Codes -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <p style="margin: 0 0 8px; font-size: 15px; font-weight: 600; color: #1a1a1a;">
+                        Need to Generate New Codes?
+                      </p>
+                      <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #718096;">
+                        You can generate a new set of recovery codes at any time from your account security settings. This will invalidate all previous codes.
+                      </p>
+                      <table cellpadding="0" cellspacing="0" role="presentation">
+                        <tr>
+                          <td style="border-radius: 6px; background-color: #0d4f4f;">
+                            <a target="_blank" href="{{ app.security_settings|default:'#' }}"
+                              style="display: inline-block; padding: 14px 28px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 6px;">
+                              Go to Security Settings
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Divider -->
+                  <tr>
+                    <td style="padding: 16px 0 24px;">
+                      <div style="height: 1px; background-color: #e2e8f0;"></div>
+                    </td>
+                  </tr>
+
+                  <!-- Help Section -->
+                  <tr>
+                    <td>
+                      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #718096;">
+                        Questions about recovery codes? Visit our
+                        <a target="_blank" href="{{ app.help_center_2fa|default:'#' }}"
+                          style="color: #0d4f4f; text-decoration: underline;">2FA Help Center</a>
+                        or contact our security team at
+                        <a target="_blank" href="mailto:{{ app.security_email|default:app.support_email|default:'support@example.com' }}"
+                          style="color: #0d4f4f; text-decoration: underline;">{{app.security_email|default:app.support_email|default:'support@example.com' }}</a>.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Signature -->
+                  <tr>
+                    <td style="padding-top: 32px;">
+                      <p style="margin: 0 0 8px; font-size: 16px; color: #1a1a1a;">
+                        Stay secure,
+                      </p>
+                      <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1a1a1a;">
+                        The {{ app.name }} Security Team
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color: #f7fafc; padding: 40px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+
+                  <!-- Social Icons -->
+                  {% if social %}
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          {% if social.tiktok_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.tiktok_link }}"
+                              style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/tiktok.png" alt="TikTok"
+                                style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.linkedin_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.linkedin_link }}"
+                              style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/linkedin.png" alt="LinkedIn"
+                                style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.twitter_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.twitter_link }}"
+                              style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/twitterx.png" alt="X"
+                                style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.facebook_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.facebook_link }}"
+                              style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/facebook-new.png" alt="Facebook"
+                                style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.instagram_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.instagram_link }}"
+                              style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/instagram-new.png" alt="Instagram"
+                                style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- Company Info -->
+                  <tr>
+                    <td style="padding-bottom: 16px;">
+                      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #718096;">
+                        © {% now "Y" %} {{ company.name|default:app.name }}. All rights reserved.
+                      </p>
+                      {% if company.address %}
+                      <p style="margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: #a0aec0;">
+                        {{ company.address }}
+                      </p>
+                      {% endif %}
+                    </td>
+                  </tr>
+
+                  <!-- Footer Links -->
+                  <tr>
+                    <td>
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ app.privacy_policy_url|default:'#' }}"
+                              style="font-size: 12px; color: #0d4f4f; text-decoration: none;">Privacy Policy</a>
+                          </td>
+                          <td style="padding: 0 8px; color: #cbd5e0;">|</td>
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ app.security_center|default:'#' }}"
+                              style="font-size: 12px; color: #0d4f4f; text-decoration: none;">Security Center</a>
+                          </td>
+                          <td style="padding: 0 8px; color: #cbd5e0;">|</td>
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ app.help_center_2fa|default:'#' }}"
+                              style="font-size: 12px; color: #0d4f4f; text-decoration: none;">2FA Help</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Email Preference Note -->
+                  <tr>
+                    <td style="padding-top: 16px;">
+                      <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #a0aec0;">
+                        This is an automated security email regarding account {{ user.email }}. You cannot unsubscribe from security notifications.
+                      </p>
+                      <p style="margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: #a0aec0;">
+                        Powered by <a target="_blank" href="{{ app.tws_link }}" style="color: #0d4f4f; text-decoration: none;">Jowis Studio</a>.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+          </table>
+          <!-- End Main Container -->
+
+        </td>
+      </tr>
+    </table>
+    <!-- End Outer Table -->
+
+  </div>
+</body>
+
+</html>

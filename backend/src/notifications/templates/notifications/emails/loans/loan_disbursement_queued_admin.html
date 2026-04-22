@@ -1,0 +1,414 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+  <title>Loan Queued for Disbursement - {{ app.name }} Admin</title>
+  <!--[if mso]>
+  <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  <style>
+    table {border-collapse: collapse;}
+    .spacer,.divider {mso-line-height-rule: exactly;}
+  </style>
+  <![endif]-->
+  <style>
+    @media (max-width: 600px) {
+      .sm-w-full {
+        width: 100% !important;
+      }
+
+      .sm-px-24 {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      .sm-py-32 {
+        padding-top: 32px !important;
+        padding-bottom: 32px !important;
+      }
+    }
+  </style>
+</head>
+
+<body
+  style="margin: 0; width: 100%; padding: 0; word-break: break-word; -webkit-font-smoothing: antialiased; background-color: #f8f9fa;">
+  <div role="article" aria-roledescription="email" aria-label="Loan Queued for Disbursement" lang="en">
+    <!-- Preheader -->
+    <div style="display: none;">New loan queued: ₦{{ queue_entry.loan.principal_amount|floatformat:2|intcomma }} for {{ queue_entry.loan.user.get_full_name|default:queue_entry.loan.user.email }} - Action Required</div>
+
+    <!-- Outer Table -->
+    <table
+      style="width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+      cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td align="center" style="background-color: #f8f9fa; padding: 24px 0;">
+
+          <!-- Main Container -->
+          <table class="sm-w-full"
+            style="width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"
+            cellpadding="0" cellspacing="0" role="presentation">
+
+            <!-- Header with Logo -->
+            <tr>
+              <td style="background-color: #1e3a5f; padding: 32px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td align="center">
+                      {% if app.logo_url %}
+                      <img src="{{ app.logo_url }}" alt="{{ app.name }}"
+                        style="max-width: 120px; height: auto; display: block; margin-bottom: 12px;">
+                      {% endif %}
+                      <p style="margin: 0; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">
+                        Admin Notification
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Action Required Banner -->
+            <tr>
+              <td style="background-color: #dbeafe; padding: 16px 48px; border-bottom: 1px solid #93c5fd;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td style="width: 24px; vertical-align: middle;">
+                      <span style="font-size: 20px;">&#128176;</span>
+                    </td>
+                    <td style="padding-left: 12px; vertical-align: middle;">
+                      <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1e40af;">
+                        Loan Queued for Disbursement
+                      </p>
+                    </td>
+                    <td style="text-align: right; vertical-align: middle;">
+                      <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #92400e; background-color: #fef3c7; border-radius: 12px;">
+                        Action Required
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Main Content -->
+            <tr>
+              <td class="sm-px-24" style="padding: 40px 48px;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+
+                  <!-- Summary Header -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <h2 style="margin: 0 0 8px; font-size: 24px; font-weight: 700; color: #1a1a1a;">
+                        Disbursement Queue Entry
+                      </h2>
+                      <p style="margin: 0; font-size: 14px; color: #718096;">
+                        Queued on {{ queue_entry.created_at|date:"F j, Y" }} at {{ queue_entry.created_at|time:"g:i A" }}
+                        {% if queue_entry.added_by %}by {{ queue_entry.added_by.get_full_name|default:queue_entry.added_by.email }}{% endif %}
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Amount Highlight Card -->
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" 
+                        style="width: 100%; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); border-radius: 12px;">
+                        <tr>
+                          <td style="padding: 28px 32px; text-align: center;">
+                            <p style="margin: 0 0 4px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 1px;">
+                              Amount to Disburse
+                            </p>
+                            <p style="margin: 0; font-size: 40px; font-weight: 700; color: #ffffff;">
+                              ₦{{ queue_entry.loan.principal_amount|floatformat:2|intcomma }}
+                            </p>
+                            <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255,255,255,0.8);">
+                              {% if queue_entry.method == 'WALLET' %}via Wallet{% elif queue_entry.method == 'BANK' %}via Bank Transfer{% else %}Manual / Cash{% endif %}
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Two Column Layout: Borrower Info & Loan Details -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                        <tr>
+                          <!-- Borrower Info -->
+                          <td style="width: 48%; vertical-align: top;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" 
+                              style="width: 100%; background-color: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                              <tr>
+                                <td style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+                                  <p style="margin: 0; font-size: 12px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    &#128100; Borrower
+                                  </p>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 16px 20px;">
+                                  <p style="margin: 0 0 4px; font-size: 16px; font-weight: 600; color: #1a1a1a;">
+                                    {{ queue_entry.loan.user.get_full_name|default:queue_entry.loan.user.username }}
+                                  </p>
+                                  <p style="margin: 0 0 12px; font-size: 13px; color: #718096;">
+                                    {{ queue_entry.loan.user.email }}
+                                  </p>
+                                  {% if queue_entry.loan.user.phone_number %}
+                                  <p style="margin: 0; font-size: 13px; color: #718096;">
+                                    &#128222; {{ queue_entry.loan.user.phone_number }}
+                                  </p>
+                                  {% endif %}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                          
+                          <!-- Spacer -->
+                          <td style="width: 4%;"></td>
+                          
+                          <!-- Loan Terms -->
+                          <td style="width: 48%; vertical-align: top;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" 
+                              style="width: 100%; background-color: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                              <tr>
+                                <td style="padding: 16px 20px; border-bottom: 1px solid #e2e8f0;">
+                                  <p style="margin: 0; font-size: 12px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">
+                                    &#128197; Loan Terms
+                                  </p>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 16px 20px;">
+                                  <p style="margin: 0 0 8px; font-size: 13px; color: #718096;">Tenure</p>
+                                  <p style="margin: 0 0 16px; font-size: 16px; font-weight: 600; color: #1a1a1a;">
+                                    {{ queue_entry.loan.tenure_months }} month{% if queue_entry.loan.tenure_months != 1 %}s{% endif %}
+                                  </p>
+                                  <p style="margin: 0 0 8px; font-size: 13px; color: #718096;">Total Repayable</p>
+                                  <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1a1a1a;">
+                                    ₦{{ queue_entry.loan.total_payable|floatformat:2|intcomma }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Queue Details Table -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" 
+                        style="width: 100%; background-color: #ffffff; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        
+                        <!-- Header -->
+                        <tr>
+                          <td style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0; background-color: #f7fafc;">
+                            <p style="margin: 0; font-size: 14px; font-weight: 600; color: #1a1a1a;">
+                              Queue Details
+                            </p>
+                          </td>
+                        </tr>
+                        
+                        <!-- Queue ID -->
+                        <tr>
+                          <td style="padding: 12px 24px; border-bottom: 1px solid #f0f0f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 13px; color: #718096; width: 40%;">Queue ID</td>
+                                <td style="font-size: 13px; color: #1a1a1a; font-weight: 500; font-family: monospace;">
+                                  {{ queue_entry.id }}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Loan ID -->
+                        <tr>
+                          <td style="padding: 12px 24px; border-bottom: 1px solid #f0f0f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 13px; color: #718096; width: 40%;">Loan ID</td>
+                                <td style="font-size: 13px; color: #1a1a1a; font-weight: 500; font-family: monospace;">
+                                  {{ queue_entry.loan.id }}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Disbursement Method -->
+                        <tr>
+                          <td style="padding: 12px 24px; border-bottom: 1px solid #f0f0f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 13px; color: #718096; width: 40%;">Disbursement Method</td>
+                                <td>
+                                  {% if queue_entry.method == 'WALLET' %}
+                                  <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #166534; background-color: #dcfce7; border-radius: 12px;">
+                                    Wallet
+                                  </span>
+                                  {% elif queue_entry.method == 'BANK' %}
+                                  <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #1e40af; background-color: #dbeafe; border-radius: 12px;">
+                                    Bank Transfer
+                                  </span>
+                                  {% else %}
+                                  <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #92400e; background-color: #fef3c7; border-radius: 12px;">
+                                    Manual / Cash
+                                  </span>
+                                  {% endif %}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Status -->
+                        <tr>
+                          <td style="padding: 12px 24px; border-bottom: 1px solid #f0f0f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 13px; color: #718096; width: 40%;">Queue Status</td>
+                                <td>
+                                  {% if queue_entry.status == 'QUEUED' %}
+                                  <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #1e40af; background-color: #dbeafe; border-radius: 12px;">
+                                    {{ queue_entry.get_status_display|default:queue_entry.status }}
+                                  </span>
+                                  {% elif queue_entry.status == 'PROCESSING' %}
+                                  <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #92400e; background-color: #fef3c7; border-radius: 12px;">
+                                    {{ queue_entry.get_status_display|default:queue_entry.status }}
+                                  </span>
+                                  {% elif queue_entry.status == 'DISBURSED' %}
+                                  <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #166534; background-color: #dcfce7; border-radius: 12px;">
+                                    {{ queue_entry.get_status_display|default:queue_entry.status }}
+                                  </span>
+                                  {% else %}
+                                  <span style="display: inline-block; padding: 4px 10px; font-size: 11px; font-weight: 600; color: #991b1b; background-color: #fee2e2; border-radius: 12px;">
+                                    {{ queue_entry.get_status_display|default:queue_entry.status }}
+                                  </span>
+                                  {% endif %}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Interest Rate -->
+                        <tr>
+                          <td style="padding: 12px 24px;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 13px; color: #718096; width: 40%;">Interest Rate</td>
+                                <td style="font-size: 13px; color: #1a1a1a; font-weight: 500;">
+                                  {{ queue_entry.loan.interest_rate|floatformat:2 }}% p.a.
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Notes (if provided) -->
+                  {% if queue_entry.notes %}
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" 
+                        style="width: 100%; background-color: #fffbeb; border-radius: 8px; border: 1px solid #fcd34d;">
+                        <tr>
+                          <td style="padding: 16px 20px; border-bottom: 1px solid #fcd34d;">
+                            <p style="margin: 0; font-size: 12px; font-weight: 600; color: #92400e; text-transform: uppercase; letter-spacing: 0.5px;">
+                              &#128221; Notes
+                            </p>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 16px 20px;">
+                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #78350f;">
+                              {{ queue_entry.notes }}
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- Action Button -->
+                  <tr>
+                    <td style="padding-bottom: 32px; text-align: center;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          <td style="border-radius: 6px; background-color: #1e40af;">
+                            <a href="{{ app.admin_url|default:'#' }}" target="_blank"
+                              style="display: inline-block; padding: 16px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none;">
+                              Process Disbursement &rarr;
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Divider -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <div style="height: 1px; background-color: #e2e8f0;"></div>
+                    </td>
+                  </tr>
+
+                  <!-- Footer Note -->
+                  <tr>
+                    <td>
+                      <p style="margin: 0; font-size: 12px; line-height: 1.6; color: #a0aec0; text-align: center;">
+                        This is an automated notification from {{ app.name }}. Please do not reply to this email.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color: #1e3a5f; padding: 24px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td>
+                      <p style="margin: 0; font-size: 12px; color: rgba(255,255,255,0.6);">
+                        &copy; {% now "Y" %} {{ company.name|default:app.name }}. All rights reserved.
+                      </p>
+                      {% if app.tws_link %}
+                      <p style="margin: 8px 0 0; font-size: 11px; color: rgba(255,255,255,0.4);">
+                        Powered by <a href="{{ app.tws_link }}" target="_blank" style="color: rgba(255,255,255,0.6);">Jowis Studio</a>
+                      </p>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+          </table>
+          <!-- End Main Container -->
+
+        </td>
+      </tr>
+    </table>
+    <!-- End Outer Table -->
+
+  </div>
+</body>
+
+</html>

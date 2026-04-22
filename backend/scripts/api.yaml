@@ -1,0 +1,3625 @@
+openapi: 3.0.3
+info:
+  title: bedflow API
+  version: 1.0.0
+  description: Backend API documentation for bedflow
+paths:
+  /api/v1/auth/join_waitlist/:
+    post:
+      operationId: api_v1_auth_join_waitlist_create
+      description: |-
+        Handles registration, onboarding, OTP flows, password management,
+        2FA setup, and recovery code management.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitList'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/WaitList'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitList'
+          description: ''
+  /api/v1/auth/login/:
+    post:
+      operationId: api_v1_auth_login_create
+      description: |-
+        Handles registration, onboarding, OTP flows, password management,
+        2FA setup, and recovery code management.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthLogin'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/AuthLogin'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthLogin'
+          description: ''
+  /api/v1/auth/login/refresh_token/:
+    post:
+      operationId: api_v1_auth_login_refresh_token_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/auth/mfa/authapp/qr-image/{token}/:
+    get:
+      operationId: api_v1_auth_mfa_authapp_qr_image_retrieve
+      description: |-
+        Renders a QR code PNG for the given short-lived signed token.
+        Used by email clients or frontends that cannot render otpauth URIs directly.
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+          pattern: ^.*$
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/mfa/authapp/request_qr_code/:
+    post:
+      operationId: api_v1_auth_mfa_authapp_request_qr_code_create
+      description: |-
+        Returns a short-lived signed URL for the QR image and the raw otpauth URI.
+
+        Prefer the `qrcode_uri` — render the QR yourself on the frontend.
+        **DO NOT store the QR code or URI in localStorage or any browser storage.**
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/User'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/mfa/challenge/:
+    post:
+      operationId: api_v1_auth_mfa_challenge_create
+      description: Initiate an MFA challenge for the user associated with the provided
+        MFA session token.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MFAChallenge'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/MFAChallenge'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFAChallenge'
+          description: ''
+  /api/v1/auth/mfa/methods/:
+    get:
+      operationId: api_v1_auth_mfa_methods_retrieve
+      description: Return the available MFA methods for the authenticated user.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/mfa/push/register-device/:
+    post:
+      operationId: api_v1_auth_mfa_push_register_device_create
+      description: Register a push notification device for MFA challenges. Requires
+        the device token and platform.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MFAPushDevice'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/MFAPushDevice'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFAPushDevice'
+          description: ''
+  /api/v1/auth/mfa/setup/totp/:
+    post:
+      operationId: api_v1_auth_mfa_setup_totp_create
+      description: Initiate TOTP setup for the authenticated user and return the provisioning
+        URI.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MFATotpSetup'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/MFATotpSetup'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFATotpSetup'
+          description: ''
+  /api/v1/auth/mfa/setup/webauthn/:
+    post:
+      operationId: api_v1_auth_mfa_setup_webauthn_create
+      description: Initiate WebAuthn setup for the authenticated user and return the
+        challenge and credential options.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MFAWebAuthnSetup'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/MFAWebAuthnSetup'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFAWebAuthnSetup'
+          description: ''
+  /api/v1/auth/mfa/verify/:
+    post:
+      operationId: api_v1_auth_mfa_verify_create
+      description: Verify the response to an MFA challenge using the provided MFA
+        session token.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MFAVerify'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/MFAVerify'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFAVerify'
+          description: ''
+  /api/v1/auth/mfa/verify/totp/:
+    post:
+      operationId: api_v1_auth_mfa_verify_totp_create
+      description: Verify the TOTP code provided by the user during TOTP setup.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MFATotpVerify'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/MFATotpVerify'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFATotpVerify'
+          description: ''
+  /api/v1/auth/mfa/verify/webauthn/:
+    post:
+      operationId: api_v1_auth_mfa_verify_webauthn_create
+      description: Verify the WebAuthn assertion provided by the user during the MFA
+        challenge flow.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MFAWebAuthnVerify'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/MFAWebAuthnVerify'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MFAWebAuthnVerify'
+          description: ''
+  /api/v1/auth/onboarding/email/check_email_verification_otp/:
+    post:
+      operationId: api_v1_auth_onboarding_email_check_email_verification_otp_create
+      description: |-
+        Verify the email OTP. On success, marks email as verified and
+        advances onboarding. Raises ValidationError on invalid/expired OTP.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerification'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/EmailVerification'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailVerification'
+          description: ''
+  /api/v1/auth/onboarding/email/send_email_verification_otp/:
+    post:
+      operationId: api_v1_auth_onboarding_email_send_email_verification_otp_create
+      description: Send a verification OTP to the user's email address.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerification'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/EmailVerification'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailVerification'
+          description: ''
+  /api/v1/auth/onboarding/get_onboarding_token/:
+    post:
+      operationId: api_v1_auth_onboarding_get_onboarding_token_create
+      description: |-
+        Authenticate the user and return an onboarding token.
+        Only works while onboarding is incomplete.
+        Token expires after `settings.ONBOARDING_TOKEN_EXPIRY_TIME_SECONDS`.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetOboardingToken'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/GetOboardingToken'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOboardingToken'
+          description: ''
+  /api/v1/auth/onboarding/phone/check_phone_verification_otp/:
+    post:
+      operationId: api_v1_auth_onboarding_phone_check_phone_verification_otp_create
+      description: |-
+        Verify the phone OTP. On success, marks phone as verified and
+        advances onboarding. Raises ValidationError on invalid/expired OTP.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneVerification'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PhoneVerification'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneVerification'
+          description: ''
+  /api/v1/auth/onboarding/phone/send_phone_verification_otp/:
+    post:
+      operationId: api_v1_auth_onboarding_phone_send_phone_verification_otp_create
+      description: Send a verification OTP to the user's phone number.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneVerification'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PhoneVerification'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneVerification'
+          description: ''
+  /api/v1/auth/onboarding/set_profile_picture/:
+    post:
+      operationId: api_v1_auth_onboarding_set_profile_picture_create
+      description: |-
+        Upload profile picture during onboarding.
+        Requires a valid onboarding token. Advances onboarding on success.
+      tags:
+      - auth
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangeProfilePicture'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangeProfilePicture'
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ChangeProfilePicture'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUser'
+          description: ''
+  /api/v1/auth/onboarding/set_username/:
+    post:
+      operationId: api_v1_auth_onboarding_set_username_create
+      description: |-
+        Set the user's username during onboarding.
+        Requires a valid onboarding token. Advances onboarding on success.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserName'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ChangeUserName'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeUserName'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: api_v1_auth_register_create
+      description: |-
+        Register a new user account.
+        Returns the created user and advances onboarding to the first real step.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUser'
+          description: ''
+  /api/v1/notifications/:
+    get:
+      operationId: api_v1_notifications_list
+      description: |-
+        ViewSet for managing user notifications.
+
+        Provides list, retrieve, mark as read, mark all as read, and unread count endpoints.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/{id}/:
+    get:
+      operationId: api_v1_notifications_retrieve
+      description: |-
+        ViewSet for managing user notifications.
+
+        Provides list, retrieve, mark as read, mark all as read, and unread count endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/{id}/read/:
+    patch:
+      operationId: api_v1_notifications_read_partial_update
+      description: |-
+        PATCH /api/v1/notifications/<id>/read/
+        Marks a single notification as read.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/mark-all-read/:
+    post:
+      operationId: api_v1_notifications_mark_all_read_create
+      description: |-
+        POST /api/v1/notifications/mark-all-read/
+        Marks all of the current user's unread notifications as read.
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/unread-count/:
+    get:
+      operationId: api_v1_notifications_unread_count_retrieve
+      description: |-
+        GET /api/v1/notifications/unread-count/
+        Returns the count of unread notifications for the current user.
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/oauth/{provider}/callback/:
+    get:
+      operationId: api_v1_oauth_callback_retrieve
+      description: |-
+        OAuth callback endpoint that providers (e.g. Google) redirect to after authorization.
+
+        Accepts OAuth query parameters (code, state, etc.) via GET, completes the
+        authentication flow, and returns a JWT response.
+
+        GET /api/v1/oauth/{provider}/callback/?code=...&state=...
+      parameters:
+      - in: path
+        name: provider
+        schema:
+          type: string
+        required: true
+      tags:
+      - oauth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/oauth/{provider}/login-or-register/:
+    post:
+      operationId: api_v1_oauth_login_or_register_create
+      description: Provider-based OAuth login endpoint for code exchange flows.
+      parameters:
+      - in: path
+        name: provider
+        schema:
+          type: string
+        required: true
+      tags:
+      - oauth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthCodeExchange'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/OAuthCodeExchange'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthCodeExchange'
+          description: ''
+  /api/v1/oauth/get_providers/:
+    get:
+      operationId: api_v1_oauth_get_providers_retrieve
+      description: Provider-based OAuth login endpoint for code exchange flows.
+      tags:
+      - oauth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/organizations/:
+    get:
+      operationId: api_v1_organizations_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationList'
+          description: ''
+    post:
+      operationId: api_v1_organizations_create
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganization'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateOrganization'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrganization'
+          description: ''
+  /api/v1/organizations/{organization_id}/audit-logs/:
+    get:
+      operationId: api_v1_organizations_audit_logs_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationAuditLogList'
+          description: ''
+  /api/v1/organizations/{organization_id}/audit-logs/{id}/:
+    get:
+      operationId: api_v1_organizations_audit_logs_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization audit log.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationAuditLog'
+          description: ''
+  /api/v1/organizations/{organization_id}/invitations/:
+    get:
+      operationId: api_v1_organizations_invitations_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationInvitationList'
+          description: ''
+    post:
+      operationId: api_v1_organizations_invitations_create
+      parameters:
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateInvitation'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateInvitation'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateInvitation'
+          description: ''
+  /api/v1/organizations/{organization_id}/invitations/{id}/:
+    get:
+      operationId: api_v1_organizations_invitations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization invitation.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationInvitation'
+          description: ''
+  /api/v1/organizations/{organization_id}/invitations/{id}/accept/:
+    post:
+      operationId: api_v1_organizations_invitations_accept_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization invitation.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptInvitation'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/AcceptInvitation'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptInvitation'
+          description: ''
+  /api/v1/organizations/{organization_id}/invitations/{id}/decline/:
+    post:
+      operationId: api_v1_organizations_invitations_decline_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization invitation.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeclineInvitation'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/DeclineInvitation'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeclineInvitation'
+          description: ''
+  /api/v1/organizations/{organization_id}/invitations/{id}/resend/:
+    post:
+      operationId: api_v1_organizations_invitations_resend_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization invitation.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendInvitation'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ResendInvitation'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResendInvitation'
+          description: ''
+  /api/v1/organizations/{organization_id}/invitations/{id}/revoke/:
+    post:
+      operationId: api_v1_organizations_invitations_revoke_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization invitation.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeInvitation'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/RevokeInvitation'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevokeInvitation'
+          description: ''
+  /api/v1/organizations/{organization_id}/invitations/accept-by-token/:
+    post:
+      operationId: api_v1_organizations_invitations_accept_by_token_create
+      parameters:
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptInvitation'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/AcceptInvitation'
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptInvitation'
+          description: ''
+  /api/v1/organizations/{organization_id}/invitations/decline-by-token/:
+    post:
+      operationId: api_v1_organizations_invitations_decline_by_token_create
+      parameters:
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeclineInvitation'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/DeclineInvitation'
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeclineInvitation'
+          description: ''
+  /api/v1/organizations/{organization_id}/memberships/:
+    get:
+      operationId: api_v1_organizations_memberships_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationMembershipList'
+          description: ''
+    post:
+      operationId: api_v1_organizations_memberships_create
+      parameters:
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationMembership'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationMembership'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrganizationMembership'
+          description: ''
+  /api/v1/organizations/{organization_id}/memberships/{id}/:
+    get:
+      operationId: api_v1_organizations_memberships_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization membership.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMembership'
+          description: ''
+    put:
+      operationId: api_v1_organizations_memberships_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization membership.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationMembership'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationMembership'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationMembership'
+          description: ''
+    patch:
+      operationId: api_v1_organizations_memberships_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization membership.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganizationMembership'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganizationMembership'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationMembership'
+          description: ''
+    delete:
+      operationId: api_v1_organizations_memberships_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization membership.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/organizations/{organization_id}/resources/:
+    get:
+      operationId: api_v1_organizations_resources_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationResourceList'
+          description: ''
+    post:
+      operationId: api_v1_organizations_resources_create
+      parameters:
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationResource'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationResource'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrganizationResource'
+          description: ''
+  /api/v1/organizations/{organization_id}/resources/{id}/:
+    get:
+      operationId: api_v1_organizations_resources_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization resource.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationResource'
+          description: ''
+    put:
+      operationId: api_v1_organizations_resources_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization resource.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationResource'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationResource'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationResource'
+          description: ''
+    patch:
+      operationId: api_v1_organizations_resources_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization resource.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganizationResource'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganizationResource'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationResource'
+          description: ''
+    delete:
+      operationId: api_v1_organizations_resources_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization resource.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/organizations/{organization_id}/roles/:
+    get:
+      operationId: api_v1_organizations_roles_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationRoleList'
+          description: ''
+    post:
+      operationId: api_v1_organizations_roles_create
+      parameters:
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationRole'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationRole'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrganizationRole'
+          description: ''
+  /api/v1/organizations/{organization_id}/roles/{id}/:
+    get:
+      operationId: api_v1_organizations_roles_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization role.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationRole'
+          description: ''
+    put:
+      operationId: api_v1_organizations_roles_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization role.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationRole'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationRole'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationRole'
+          description: ''
+    patch:
+      operationId: api_v1_organizations_roles_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization role.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganizationRole'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganizationRole'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationRole'
+          description: ''
+    delete:
+      operationId: api_v1_organizations_roles_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization role.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/organizations/{organization_id}/settings/:
+    get:
+      operationId: api_v1_organizations_settings_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrganizationSettingList'
+          description: ''
+    post:
+      operationId: api_v1_organizations_settings_create
+      parameters:
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationSetting'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationSetting'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrganizationSetting'
+          description: ''
+  /api/v1/organizations/{organization_id}/settings/{id}/:
+    get:
+      operationId: api_v1_organizations_settings_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization setting.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationSetting'
+          description: ''
+    put:
+      operationId: api_v1_organizations_settings_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization setting.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationSetting'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationSetting'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationSetting'
+          description: ''
+    patch:
+      operationId: api_v1_organizations_settings_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization setting.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganizationSetting'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganizationSetting'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganizationSetting'
+          description: ''
+    delete:
+      operationId: api_v1_organizations_settings_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization setting.
+        required: true
+      - in: path
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/organizations/{id}/:
+    get:
+      operationId: api_v1_organizations_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization.
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+          description: ''
+    put:
+      operationId: api_v1_organizations_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization.
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganization'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganization'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganization'
+          description: ''
+    patch:
+      operationId: api_v1_organizations_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization.
+        required: true
+      tags:
+      - organizations
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganization'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateOrganization'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateOrganization'
+          description: ''
+    delete:
+      operationId: api_v1_organizations_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this organization.
+        required: true
+      tags:
+      - organizations
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/reset/:
+    post:
+      operationId: api_v1_reset_create
+      description: |-
+        Handles POST /password/reset/
+
+        🔹 What it does:
+            - Accepts email
+            - Generates reset token
+            - Emits reset_password_token_created signal
+
+        🔹 Where to customize:
+            - Override `create()` to:
+                • Add rate limiting
+                • Add audit logging
+                • Customize response payload
+                • Block inactive users
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Email'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Email'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+          description: ''
+  /api/v1/reset/confirm/:
+    post:
+      operationId: api_v1_reset_confirm_create
+      description: |-
+        Override this if you want:
+            • Stronger password rules
+            • Extra logging
+            • Notify user after password change
+            • Invalidate all sessions
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /api/v1/reset/confirm/render_reset_page/:
+    get:
+      operationId: api_v1_reset_confirm_render_reset_page_retrieve
+      description: |-
+        Custom GET handler for browser-based reset flow.
+
+        This does NOT affect API behavior.
+      tags:
+      - password_reset
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /api/v1/reset/validate_token/:
+    post:
+      operationId: api_v1_reset_validate_token_create
+      description: |-
+        Handles POST /password/reset/validate_token/
+
+        🔹 What it does:
+            - Checks if token exists
+            - Checks if token expired
+            - Returns validity response
+
+        🔹 Where to customize:
+            - Override `create()` to:
+                • Add custom expiration logic
+                • Add attempt tracking
+                • Add logging
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetToken'
+          description: ''
+  /api/v1/security/2fa/reset_recovery_codes/:
+    post:
+      operationId: api_v1_security_2fa_reset_recovery_codes_create
+      description: |-
+        Regenerate all recovery codes for the authenticated user.
+        Requires password confirmation. Codes are shown once and never again.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRecoveryCodes'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ResetRecoveryCodes'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetRecoveryCodes'
+          description: ''
+  /api/v1/security/password/:
+    put:
+      operationId: api_v1_security_password_update
+      description: Change password for an authenticated user who knows their current
+        password.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordReset'
+          description: ''
+  /api/v1/security/password/reset_forgot_password/:
+    put:
+      operationId: api_v1_security_password_reset_forgot_password_update
+      description: Reset password using an OTP sent to email or phone.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetForgottenPassword'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ResetForgottenPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetForgottenPassword'
+          description: ''
+  /api/v1/security/password/send_forgot_password_otp/:
+    put:
+      operationId: api_v1_security_password_send_forgot_password_otp_update
+      description: |-
+        Send a password-reset OTP to the user's email or phone.
+        Always responds with 200 to avoid leaking account existence.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailOrPhone'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/EmailOrPhone'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailOrPhone'
+          description: ''
+  /api/v1/users/delete_me/:
+    delete:
+      operationId: api_v1_users_delete_me_destroy
+      description: |-
+        Soft/hard delete the authenticated user's account.
+        TODO: implement account deletion policy (soft-delete, data retention, etc.)
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/users/me/:
+    get:
+      operationId: api_v1_users_me_retrieve
+      description: Return the authenticated user's profile.
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/users/update_me/:
+    patch:
+      operationId: api_v1_users_update_me_partial_update
+      description: Partially update the authenticated user's profile.
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUser'
+          description: ''
+components:
+  schemas:
+    AcceptInvitation:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 255
+    AuthLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - email
+      - password
+    ChangeProfilePicture:
+      type: object
+      properties:
+        onboarding_token:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        profile_picture:
+          type: string
+          format: binary
+      required:
+      - onboarding_token
+      - profile_picture
+    ChangeUserName:
+      type: object
+      properties:
+        onboarding_token:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        new_username:
+          type: string
+          writeOnly: true
+          maxLength: 150
+      required:
+      - onboarding_token
+    CreateInvitation:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        role_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+          maxLength: 500
+        expires_at:
+          type: string
+          format: date-time
+      required:
+      - email
+      - role_id
+    CreateOrganization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+        settings: {}
+      required:
+      - id
+      - name
+    CreateOrganizationMembership:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        role_id:
+          type: string
+          format: uuid
+      required:
+      - role_id
+    CreateOrganizationResource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        resource_type:
+          $ref: '#/components/schemas/ResourceTypeEnum'
+        payload: {}
+      required:
+      - id
+      - name
+    CreateOrganizationRole:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        permissions: {}
+      required:
+      - id
+      - name
+    CreateOrganizationSetting:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          maxLength: 100
+        value: {}
+        description:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - key
+    CreateUser:
+      type: object
+      description: |-
+        Used for registration input validation and the registration response.
+        User creation is handled explicitly in the view — do not call .save() on this serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 128
+        onboarding_status:
+          allOf:
+          - $ref: '#/components/schemas/OnboardingStatusEnum'
+          readOnly: true
+        onboarding_flow:
+          type: array
+          items: {}
+          readOnly: true
+        is_email_verified:
+          type: boolean
+          readOnly: true
+        is_phone_number_verified:
+          type: boolean
+          readOnly: true
+        onboarding_token:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - is_email_verified
+      - is_phone_number_verified
+      - onboarding_flow
+      - onboarding_status
+      - onboarding_token
+      - password
+      - username
+    DeclineInvitation:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 255
+    Email:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    EmailOrPhone:
+      type: object
+      description: Accepts email or phone as a single unified field.
+      properties:
+        email_or_phone_number:
+          type: string
+      required:
+      - email_or_phone_number
+    EmailVerification:
+      type: object
+      description: Used for both sending and checking email OTPs. `otp` is optional
+        on send.
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+          writeOnly: true
+          maxLength: 10
+      required:
+      - email
+    GetOboardingToken:
+      type: object
+      description: Authenticates a user who hasn't completed onboarding and returns
+        a token.
+      properties:
+        email:
+          type: string
+          format: email
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        onboarding_token:
+          type: string
+          readOnly: true
+          maxLength: 500
+      required:
+      - email
+      - onboarding_token
+      - password
+    MFAChallenge:
+      type: object
+      properties:
+        mfa_session_token:
+          type: string
+          maxLength: 255
+        selected_method:
+          $ref: '#/components/schemas/SelectedMethodEnum'
+      required:
+      - mfa_session_token
+      - selected_method
+    MFAPushDevice:
+      type: object
+      properties:
+        token:
+          type: string
+          maxLength: 500
+        platform:
+          $ref: '#/components/schemas/PlatformEnum'
+      required:
+      - platform
+      - token
+    MFATotpSetup:
+      type: object
+      properties:
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+      required:
+      - password
+    MFATotpVerify:
+      type: object
+      properties:
+        otp:
+          type: string
+          writeOnly: true
+          maxLength: 10
+      required:
+      - otp
+    MFAVerify:
+      type: object
+      properties:
+        mfa_session_token:
+          type: string
+          maxLength: 255
+        selected_method:
+          $ref: '#/components/schemas/SelectedMethodEnum'
+        otp:
+          type: string
+          maxLength: 20
+        approval_code:
+          type: string
+          maxLength: 20
+        challenge:
+          type: string
+          maxLength: 5000
+        assertion:
+          type: string
+          maxLength: 10000
+      required:
+      - mfa_session_token
+      - selected_method
+    MFAWebAuthnSetup:
+      type: object
+      properties:
+        credential_id:
+          type: string
+          maxLength: 2048
+        public_key:
+          type: string
+          maxLength: 8192
+        sign_count:
+          type: integer
+          minimum: 0
+          default: 0
+      required:
+      - credential_id
+      - public_key
+    MFAWebAuthnVerify:
+      type: object
+      properties:
+        mfa_session_token:
+          type: string
+          maxLength: 255
+        challenge:
+          type: string
+          maxLength: 5000
+        assertion:
+          type: string
+          maxLength: 10000
+      required:
+      - assertion
+      - challenge
+      - mfa_session_token
+    MembershipUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - id
+      - username
+    OAuthCodeExchange:
+      type: object
+      description: Payload for provider authorization code exchange.
+      properties:
+        code:
+          type: string
+          writeOnly: true
+          maxLength: 4096
+        redirect_uri:
+          type: string
+          format: uri
+          writeOnly: true
+        state:
+          type: string
+          writeOnly: true
+          maxLength: 1024
+        code_verifier:
+          type: string
+          writeOnly: true
+          maxLength: 2048
+      required:
+      - code
+    OnboardingStatusEnum:
+      enum:
+      - needs_basic_information
+      - needs_email_verification
+      - needs_phone_verification
+      - needs_profile_username
+      - needs_profile_picture
+      - completed
+      type: string
+      description: |-
+        * `needs_basic_information` - Needs Basic Information
+        * `needs_email_verification` - Needs Email Verification
+        * `needs_phone_verification` - Needs Phone Verification
+        * `needs_profile_username` - Needs Profile Username
+        * `needs_profile_picture` - Needs Profile Picture
+        * `completed` - Completed
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+        settings: {}
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - id
+      - name
+      - updated_at
+    OrganizationAuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        actor:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        action:
+          type: string
+          readOnly: true
+        resource_type:
+          type: string
+          readOnly: true
+        resource_id:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        metadata:
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - action
+      - actor
+      - created_at
+      - id
+      - metadata
+      - organization
+      - resource_id
+      - resource_type
+    OrganizationInvitation:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        invited_user:
+          type: string
+          format: uuid
+          nullable: true
+        role:
+          type: string
+          format: uuid
+        role_name:
+          type: string
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/OrganizationInvitationStatusEnum'
+          readOnly: true
+        message:
+          type: string
+          maxLength: 500
+        invited_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        responded_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        expires_at:
+          type: string
+          format: date-time
+        responded_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+      - invited_by
+      - organization
+      - responded_at
+      - responded_by
+      - role
+      - role_name
+      - status
+      - updated_at
+    OrganizationInvitationStatusEnum:
+      enum:
+      - pending
+      - accepted
+      - declined
+      - revoked
+      - expired
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `accepted` - Accepted
+        * `declined` - Declined
+        * `revoked` - Revoked
+        * `expired` - Expired
+    OrganizationMembership:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/MembershipUser'
+          readOnly: true
+        role:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+        invited_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - invited_by
+      - joined_at
+      - organization
+      - role
+      - updated_at
+      - user
+    OrganizationResource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        resource_type:
+          $ref: '#/components/schemas/ResourceTypeEnum'
+        payload: {}
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        updated_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - id
+      - name
+      - organization
+      - updated_at
+      - updated_by
+    OrganizationRole:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        role_type:
+          allOf:
+          - $ref: '#/components/schemas/RoleTypeEnum'
+          readOnly: true
+          default: custom
+        is_system:
+          type: boolean
+          readOnly: true
+          default: false
+        permissions: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - is_system
+      - name
+      - organization
+      - role_type
+      - updated_at
+    OrganizationSetting:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        organization:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          maxLength: 100
+        value: {}
+        description:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - key
+      - organization
+      - updated_at
+    PaginatedOrganizationAuditLogList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationAuditLog'
+    PaginatedOrganizationInvitationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationInvitation'
+    PaginatedOrganizationList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Organization'
+    PaginatedOrganizationMembershipList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationMembership'
+    PaginatedOrganizationResourceList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationResource'
+    PaginatedOrganizationRoleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationRole'
+    PaginatedOrganizationSettingList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrganizationSetting'
+    PasswordReset:
+      type: object
+      description: For authenticated password change (requires current password).
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        new_password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        repeat_new_password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+      required:
+      - new_password
+      - old_password
+      - repeat_new_password
+    PasswordToken:
+      type: object
+      properties:
+        password:
+          type: string
+        token:
+          type: string
+      required:
+      - password
+      - token
+    PatchedUpdateOrganization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+        settings: {}
+    PatchedUpdateOrganizationMembership:
+      type: object
+      properties:
+        role_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+    PatchedUpdateOrganizationResource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        resource_type:
+          $ref: '#/components/schemas/ResourceTypeEnum'
+        payload: {}
+    PatchedUpdateOrganizationRole:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        permissions: {}
+    PatchedUpdateOrganizationSetting:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          maxLength: 100
+        value: {}
+        description:
+          type: string
+          maxLength: 255
+    PatchedUpdateUser:
+      type: object
+      description: Serializer for partial profile updates by an authenticated user.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        mfa_is_enabled:
+          type: boolean
+    PhoneVerification:
+      type: object
+      description: |-
+        Used for both sending and checking phone OTPs. `otp` is optional on send.
+        Region is intentionally not set here — enforced at the country level elsewhere.
+      properties:
+        phone_number:
+          type: string
+        otp:
+          type: string
+          writeOnly: true
+          maxLength: 10
+      required:
+      - phone_number
+    PlatformEnum:
+      enum:
+      - ios
+      - android
+      - web
+      - unknown
+      type: string
+      description: |-
+        * `ios` - ios
+        * `android` - android
+        * `web` - web
+        * `unknown` - unknown
+    ResendInvitation:
+      type: object
+      properties:
+        expires_at:
+          type: string
+          format: date-time
+    ResetForgottenPassword:
+      type: object
+      description: Completes a forgot-password reset using an OTP.
+      properties:
+        email_or_phone_number:
+          type: string
+        otp:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        repeat_password:
+          type: string
+          writeOnly: true
+      required:
+      - email_or_phone_number
+      - otp
+      - password
+      - repeat_password
+    ResetRecoveryCodes:
+      type: object
+      description: Input for recovery code regeneration. Codes are write-once, read-never.
+      properties:
+        password:
+          type: string
+          writeOnly: true
+        recovery_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - password
+      - recovery_codes
+    ResetToken:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+      - token
+    ResourceTypeEnum:
+      enum:
+      - project
+      - file
+      - config
+      - other
+      type: string
+      description: |-
+        * `project` - Project
+        * `file` - File
+        * `config` - Config
+        * `other` - Other
+    RevokeInvitation:
+      type: object
+      properties:
+        reason:
+          type: string
+          maxLength: 500
+    RoleTypeEnum:
+      enum:
+      - owner
+      - admin
+      - member
+      - custom
+      type: string
+      description: |-
+        * `owner` - Owner
+        * `admin` - Admin
+        * `member` - Member
+        * `custom` - Custom
+    SelectedMethodEnum:
+      enum:
+      - totp
+      - sms
+      - email
+      - webauthn
+      - push
+      type: string
+      description: |-
+        * `totp` - totp
+        * `sms` - sms
+        * `email` - email
+        * `webauthn` - webauthn
+        * `push` - push
+    StatusA3eEnum:
+      enum:
+      - active
+      - inactive
+      type: string
+      description: |-
+        * `active` - Active
+        * `inactive` - Inactive
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    UpdateOrganization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        logo:
+          type: string
+          format: uri
+          nullable: true
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+        settings: {}
+      required:
+      - id
+      - name
+    UpdateOrganizationMembership:
+      type: object
+      properties:
+        role_id:
+          type: string
+          format: uuid
+        status:
+          $ref: '#/components/schemas/StatusA3eEnum'
+      required:
+      - role_id
+    UpdateOrganizationResource:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        resource_type:
+          $ref: '#/components/schemas/ResourceTypeEnum'
+        payload: {}
+      required:
+      - id
+      - name
+    UpdateOrganizationRole:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        permissions: {}
+      required:
+      - id
+      - name
+    UpdateOrganizationSetting:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        key:
+          type: string
+          maxLength: 100
+        value: {}
+        description:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - key
+    UpdateUser:
+      type: object
+      description: Serializer for partial profile updates by an authenticated user.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        mfa_is_enabled:
+          type: boolean
+      required:
+      - id
+      - username
+    User:
+      type: object
+      description: Read-only serializer for returning user profile data.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        picture_url:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          title: PictureUrl
+        phone_number:
+          type: string
+          readOnly: true
+          nullable: true
+        onboarding_status:
+          allOf:
+          - $ref: '#/components/schemas/OnboardingStatusEnum'
+          readOnly: true
+        onboarding_flow:
+          type: array
+          items: {}
+          readOnly: true
+        is_email_verified:
+          type: boolean
+          readOnly: true
+        is_phone_number_verified:
+          type: boolean
+          readOnly: true
+        mfa_is_enabled:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - first_name
+      - id
+      - is_email_verified
+      - is_phone_number_verified
+      - last_name
+      - mfa_is_enabled
+      - onboarding_flow
+      - onboarding_status
+      - phone_number
+      - picture_url
+      - username
+    WaitList:
+      type: object
+      description: Input/output serializer for waitlist entries. ip_address is never
+        exposed.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

@@ -1,0 +1,452 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+  <title>Loan Application Update - {{ app.name }}</title>
+  <!--[if mso]>
+  <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  <style>
+    table {border-collapse: collapse;}
+    .spacer,.divider {mso-line-height-rule: exactly;}
+  </style>
+  <![endif]-->
+  <style>
+    @media (max-width: 600px) {
+      .sm-w-full {
+        width: 100% !important;
+      }
+
+      .sm-px-24 {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      .sm-py-32 {
+        padding-top: 32px !important;
+        padding-bottom: 32px !important;
+      }
+    }
+  </style>
+</head>
+
+<body
+  style="margin: 0; width: 100%; padding: 0; word-break: break-word; -webkit-font-smoothing: antialiased; background-color: #f8f9fa;">
+  <div role="article" aria-roledescription="email" aria-label="Loan Application Update" lang="en">
+    <!-- Preheader -->
+    <div style="display: none;">We have an update regarding your loan application. Please review the details below.</div>
+
+    <!-- Outer Table -->
+    <table
+      style="width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;"
+      cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td align="center" style="background-color: #f8f9fa; padding: 24px 0;">
+
+          <!-- Main Container -->
+          <table class="sm-w-full"
+            style="width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);"
+            cellpadding="0" cellspacing="0" role="presentation">
+
+            <!-- Header with Logo -->
+            <tr>
+              <td style="background-color: #0d4f4f; padding: 40px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td align="center">
+                      {% if app.logo_url %}
+                      <img src="{{ app.logo_url }}" alt="{{ app.name }}"
+                        style="max-width: 150px; height: auto; display: block;">
+                      {% else %}
+                      <h1 style="margin: 0; font-size: 32px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                        {{ app.name }}</h1>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Hero Section -->
+            <tr>
+              <td style="background-color: #0d4f4f; padding: 0 48px 48px;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td align="center">
+                      <h2
+                        style="margin: 0 0 8px; font-size: 28px; font-weight: 700; color: #ffffff; line-height: 1.3;">
+                        Loan Application Update
+                      </h2>
+                      <p style="margin: 0; font-size: 16px; color: rgba(255,255,255,0.85);">
+                        We've reviewed your application
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Main Content -->
+            <tr>
+              <td class="sm-px-24" style="padding: 48px;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+
+                  <!-- Personalized Greeting -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <p style="margin: 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">
+                        Hi {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %},
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Main Message -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #4a5568;">
+                        Thank you for your interest in obtaining a loan with {{ app.name }}. After careful review of your application, 
+                        we regret to inform you that we are unable to approve your loan request at this time.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Application Details Card -->
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" 
+                        style="width: 100%; background-color: #f7fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        
+                        <!-- Card Header -->
+                        <tr>
+                          <td style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0;">
+                            <p style="margin: 0; font-size: 14px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">
+                              Application Details
+                            </p>
+                          </td>
+                        </tr>
+                        
+                        <!-- Application ID -->
+                        <tr>
+                          <td style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 14px; color: #718096;">Application ID</td>
+                                <td style="font-size: 14px; color: #1a1a1a; font-weight: 500; text-align: right; font-family: monospace;">
+                                  #{{ loan_application.id|truncatechars:13 }}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Loan Product -->
+                        {% if loan_application.product %}
+                        <tr>
+                          <td style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 14px; color: #718096;">Loan Product</td>
+                                <td style="font-size: 14px; color: #1a1a1a; font-weight: 500; text-align: right;">
+                                  {{ loan_application.product.name }}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+                        
+                        <!-- Amount Requested -->
+                        <tr>
+                          <td style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 14px; color: #718096;">Amount Requested</td>
+                                <td style="font-size: 14px; color: #1a1a1a; font-weight: 600; text-align: right;">
+                                  ₦{{ loan_application.amount_requested|floatformat:2|intcomma }}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Tenure -->
+                        <tr>
+                          <td style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 14px; color: #718096;">Requested Tenure</td>
+                                <td style="font-size: 14px; color: #1a1a1a; font-weight: 500; text-align: right;">
+                                  {{ loan_application.tenure_months }} month{% if loan_application.tenure_months != 1 %}s{% endif %}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Applied Date -->
+                        <tr>
+                          <td style="padding: 16px 24px; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 14px; color: #718096;">Applied On</td>
+                                <td style="font-size: 14px; color: #1a1a1a; font-weight: 500; text-align: right;">
+                                  {{ loan_application.created_at|date:"F j, Y" }}
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                        <!-- Status -->
+                        <tr>
+                          <td style="padding: 16px 24px;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="font-size: 14px; color: #718096;">Status</td>
+                                <td style="text-align: right;">
+                                  <span style="display: inline-block; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #991b1b; background-color: #fee2e2; border-radius: 12px;">
+                                    Not Approved
+                                  </span>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Reason Section (if provided) -->
+                  {% if loan_application.rejection_reason %}
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" 
+                        style="width: 100%; background-color: #fef2f2; border-radius: 8px; border: 1px solid #fecaca;">
+                        <tr>
+                          <td style="padding: 20px 24px;">
+                            <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #991b1b;">
+                              Reason for Decision
+                            </p>
+                            <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #7f1d1d;">
+                              {{ loan_application.rejection_reason }}
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- What's Next Section -->
+                  <tr>
+                    <td style="padding: 24px; background-color: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 4px; margin-bottom: 24px;">
+                      <p style="margin: 0 0 12px; font-size: 16px; font-weight: 600; color: #1e40af;">
+                        What can you do next?
+                      </p>
+                      <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.8; color: #4a5568;">
+                        <li>Review any feedback provided and address the concerns</li>
+                        <li>Ensure your profile information is complete and up-to-date</li>
+                        <li>You may apply again after 30 days with updated information</li>
+                        <li>Contact our support team if you have questions about the decision</li>
+                      </ul>
+                    </td>
+                  </tr>
+
+                  <!-- Encouragement Note -->
+                  <tr>
+                    <td style="padding: 24px 0;">
+                      <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #4a5568;">
+                        We understand this may not be the outcome you were hoping for. Please know that each application is 
+                        evaluated individually, and this decision does not prevent you from applying again in the future.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- CTA Button -->
+                  <tr>
+                    <td style="padding: 16px 0 32px; text-align: center;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          <td style="border-radius: 6px; background-color: #0d4f4f;">
+                            <a href="{{ app.dashboard_url|default:'#' }}" target="_blank"
+                              style="display: inline-block; padding: 16px 32px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none;">
+                              View Your Dashboard &rarr;
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Divider -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <div style="height: 1px; background-color: #e2e8f0;"></div>
+                    </td>
+                  </tr>
+
+                  <!-- Help Section -->
+                  <tr>
+                    <td style="padding-top: 0;">
+                      <p style="margin: 0 0 8px; font-size: 14px; line-height: 1.6; color: #718096;">
+                        Have questions? Contact our support team at
+                        <a href="mailto:{{ app.support_email|default:'support@example.com' }}"
+                          style="color: #0d4f4f; text-decoration: underline;">{{ app.support_email|default:'support@example.com' }}</a>
+                        or visit our
+                        <a href="{{ app.support_center|default:'#' }}"
+                          style="color: #0d4f4f; text-decoration: underline;">help center</a>.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Signature -->
+                  <tr>
+                    <td style="padding-top: 32px;">
+                      <p style="margin: 0 0 8px; font-size: 16px; color: #1a1a1a;">
+                        Thank you for considering {{ app.name }}.
+                      </p>
+                      <p style="margin: 0; font-size: 16px; font-weight: 600; color: #1a1a1a;">
+                        The {{ app.name }} Team
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color: #f7fafc; padding: 40px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+
+                  <!-- Social Icons -->
+                  {% if social %}
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          {% if social.tiktok_link %}
+                          <td style="padding: 0 8px;">
+                            <a href="{{ social.tiktok_link }}" target="_blank" style="display: inline-block;">
+                              <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" alt="TikTok"
+                                style="width: 24px; height: 24px;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.linkedin_link %}
+                          <td style="padding: 0 8px;">
+                            <a href="{{ social.linkedin_link }}" target="_blank" style="display: inline-block;">
+                              <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn"
+                                style="width: 24px; height: 24px;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.twitter_link %}
+                          <td style="padding: 0 8px;">
+                            <a href="{{ social.twitter_link }}" target="_blank" style="display: inline-block;">
+                              <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter"
+                                style="width: 24px; height: 24px;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.facebook_link %}
+                          <td style="padding: 0 8px;">
+                            <a href="{{ social.facebook_link }}" target="_blank" style="display: inline-block;">
+                              <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"
+                                style="width: 24px; height: 24px;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.instagram_link %}
+                          <td style="padding: 0 8px;">
+                            <a href="{{ social.instagram_link }}" target="_blank" style="display: inline-block;">
+                              <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram"
+                                style="width: 24px; height: 24px;">
+                            </a>
+                          </td>
+                          {% endif %}
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- Company Info -->
+                  <tr>
+                    <td style="padding-bottom: 16px;">
+                      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #718096;">
+                        &copy; {% now "Y" %} {{ company.name|default:app.name }}. All rights reserved.
+                      </p>
+                      {% if company.address %}
+                      <p style="margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: #a0aec0;">
+                        {{ company.address }}
+                      </p>
+                      {% endif %}
+                    </td>
+                  </tr>
+
+                  <!-- Footer Links -->
+                  <tr>
+                    <td>
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          {% if app.privacy_policy_url %}
+                          <td style="padding: 0 12px;">
+                            <a href="{{ app.privacy_policy_url }}" target="_blank"
+                              style="font-size: 12px; color: #718096; text-decoration: underline;">Privacy Policy</a>
+                          </td>
+                          {% endif %}
+                          {% if app.terms_url %}
+                          <td style="padding: 0 12px;">
+                            <a href="{{ app.terms_url }}" target="_blank"
+                              style="font-size: 12px; color: #718096; text-decoration: underline;">Terms of Service</a>
+                          </td>
+                          {% endif %}
+                          {% if app.support_center %}
+                          <td style="padding: 0 12px;">
+                            <a href="{{ app.support_center }}" target="_blank"
+                              style="font-size: 12px; color: #718096; text-decoration: underline;">Help Center</a>
+                          </td>
+                          {% endif %}
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Email Preference Note -->
+                  <tr>
+                    <td style="padding-top: 16px;">
+                      <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #a0aec0;">
+                        You're receiving this email because you submitted a loan application on {{ app.name }}.
+                      </p>
+                      {% if app.tws_link %}
+                      <p style="margin: 4px 0 0; font-size: 11px; line-height: 1.5; color: #a0aec0;">
+                        Powered by <a href="{{ app.tws_link }}" target="_blank" style="color: #0d4f4f;">Jowis Studio</a>.
+                      </p>
+                      {% endif %}
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+          </table>
+          <!-- End Main Container -->
+
+        </td>
+      </tr>
+    </table>
+    <!-- End Outer Table -->
+
+  </div>
+</body>
+
+</html>

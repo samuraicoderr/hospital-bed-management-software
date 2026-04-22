@@ -1,0 +1,649 @@
+{% comment %}
+Transaction Email Template - Handles all transaction types and statuses
+
+Context:
+{
+    'user': self.user,
+    'txn': txn,
+    'app': app_default_context,
+    'company': company_default_context,
+    'social': social_default_context,
+}
+
+Transaction Types: DEPOSIT, WITHDRAWAL, TRANSFER
+Transaction Statuses: PENDING, SUCCESS, FAILED, REVERSED
+Special Cases: Loan disbursement (txn.loan), Reversals (txn.is_reversal)
+{% endcomment %}
+
+{% load humanize %}
+
+<!DOCTYPE html>
+<html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+  <title>Transaction {% if txn.status == 'success' %}Successful{% elif txn.status == 'failed' %}Failed{% elif txn.status == 'reversed' %}Reversed{% else %}Pending{% endif %} - {{ app.name }}</title>
+  <!--[if mso]>
+  <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  <style>
+    table {border-collapse: collapse;}
+    .spacer,.divider {mso-line-height-rule: exactly;}
+  </style>
+  <![endif]-->
+  <style>
+    @media (max-width: 600px) {
+      .sm-w-full {
+        width: 100% !important;
+      }
+      .sm-px-24 {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+      .sm-py-32 {
+        padding-top: 32px !important;
+        padding-bottom: 32px !important;
+      }
+      .sm-text-center {
+        text-align: center !important;
+      }
+    }
+  </style>
+</head>
+
+<body style="margin: 0; width: 100%; padding: 0; word-break: break-word; -webkit-font-smoothing: antialiased; background-color: #f8f9fa;">
+  <div role="article" aria-roledescription="email" aria-label="Transaction Notification" lang="en">
+    
+    <!-- Preheader -->
+    <div style="display: none;">
+      {% if txn.status == 'success' %}
+        Your {{ txn.get_transaction_type_display|lower }} of ₦{{ txn.amount|floatformat:2|intcomma }} was successful
+      {% elif txn.status == 'failed' %}
+        Your {{ txn.get_transaction_type_display|lower }} of ₦{{ txn.amount|floatformat:2|intcomma }} failed
+      {% elif txn.status == 'reversed' %}
+        Your transaction of ₦{{ txn.amount|floatformat:2|intcomma }} has been reversed
+      {% else %}
+        Your {{ txn.get_transaction_type_display|lower }} of ₦{{ txn.amount|floatformat:2|intcomma }} is pending
+      {% endif %}
+    </div>
+
+    <!-- Outer Table -->
+    <table style="width: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;" cellpadding="0" cellspacing="0" role="presentation">
+      <tr>
+        <td align="center" style="background-color: #f8f9fa; padding: 24px 0;">
+
+          <!-- Main Container -->
+          <table class="sm-w-full" style="width: 600px; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0" role="presentation">
+
+            <!-- Header with Logo -->
+            <tr>
+              <td style="background-color: #0d4f4f; padding: 32px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td align="center">
+                      {% if app.logo_url %}
+                      <img src="{{ app.logo_url }}" alt="{{ app.name }}" style="max-width: 150px; height: auto; display: block; margin: 0 auto;">
+                      {% else %}
+                      <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">
+                        {{ app.name }}
+                      </h1>
+                      {% endif %}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Status Banner -->
+            <tr>
+              <td style="{% if txn.status == 'success' %}background-color: #10b981;{% elif txn.status == 'failed' %}background-color: #ef4444;{% elif txn.status == 'reversed' %}background-color: #6b7280;{% else %}background-color: #f59e0b;{% endif %} padding: 24px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                  <tr>
+                    <td align="center">
+                      <!-- Status Icon -->
+                      <table cellpadding="0" cellspacing="0" role="presentation">
+                        <tr>
+                          <td style="width: 56px; height: 56px; background-color: rgba(255,255,255,0.2); border-radius: 50%; text-align: center;">
+                            {% if txn.status == 'success' %}
+                            <span style="font-size: 32px; line-height: 56px; color: #ffffff;">✓</span>
+                            {% elif txn.status == 'failed' %}
+                            <span style="font-size: 32px; line-height: 56px; color: #ffffff;">✗</span>
+                            {% elif txn.status == 'reversed' %}
+                            <span style="font-size: 32px; line-height: 56px; color: #ffffff;">↻</span>
+                            {% else %}
+                            <span style="font-size: 32px; line-height: 56px; color: #ffffff;">⏱</span>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      </table>
+                      
+                      <h2 style="margin: 16px 0 8px; font-size: 24px; font-weight: 700; color: #ffffff; line-height: 1.3;">
+                        {% if txn.is_reversal %}
+                          Reversal Transaction
+                        {% elif txn.loan %}
+                          Loan Disbursement
+                        {% else %}
+                          {{ txn.get_transaction_type_display }}
+                        {% endif %}
+                      </h2>
+                      
+                      <p style="margin: 0; font-size: 16px; color: rgba(255,255,255,0.95); font-weight: 500;">
+                        {% if txn.status == 'success' %}
+                          Transaction Successful
+                        {% elif txn.status == 'failed' %}
+                          Transaction Failed
+                        {% elif txn.status == 'reversed' %}
+                          Transaction Reversed
+                        {% else %}
+                          Transaction Pending
+                        {% endif %}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Main Content -->
+            <tr>
+              <td class="sm-px-24" style="padding: 48px;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+
+                  <!-- Greeting -->
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <p style="margin: 0; font-size: 16px; color: #1a1a1a;">
+                        Hi {% if user.first_name %}{{ user.first_name }}{% else %}{{ user.username }}{% endif %},
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Main Message -->
+                  <tr>
+                    <td style="padding-bottom: 32px;">
+                      <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #4a5568;">
+                        {% if txn.status == 'success' %}
+                          {% if txn.is_reversal %}
+                            A reversal transaction has been completed successfully on your account.
+                          {% elif txn.loan %}
+                            Your loan has been disbursed successfully. The funds are now available in your wallet.
+                          {% elif txn.transaction_type == 'deposit' %}
+                            Your deposit has been received and credited to your wallet successfully.
+                          {% elif txn.transaction_type == 'withdrawal' %}
+                            Your withdrawal request has been processed successfully.
+                          {% elif txn.transaction_type == 'transfer' %}
+                            Your transfer has been completed successfully.
+                          {% endif %}
+                        {% elif txn.status == 'failed' %}
+                          {% if txn.transaction_type == 'deposit' %}
+                            Your deposit transaction could not be completed at this time.
+                          {% elif txn.transaction_type == 'withdrawal' %}
+                            Your withdrawal request could not be processed.
+                          {% elif txn.transaction_type == 'transfer' %}
+                            Your transfer could not be completed.
+                          {% endif %}
+                        {% elif txn.status == 'reversed' %}
+                          A previous transaction has been reversed and the funds have been returned to your wallet.
+                        {% else %}
+                          Your transaction is currently being processed. We'll notify you once it's completed.
+                        {% endif %}
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Transaction Amount Card -->
+                  <tr>
+                    <td style="padding: 32px 24px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border: 2px solid {% if txn.status == 'success' %}#10b981{% elif txn.status == 'failed' %}#ef4444{% elif txn.status == 'reversed' %}#6b7280{% else %}#f59e0b{% endif %}; margin-bottom: 32px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                        <tr>
+                          <td align="center">
+                            <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: 0.5px;">
+                              Amount
+                            </p>
+                            <p style="margin: 0; font-size: 36px; font-weight: 700; color: #1a1a1a; line-height: 1.2;">
+                              ₦{{ txn.amount|floatformat:2|intcomma }}
+                            </p>
+                            {% if txn.fees > 0 %}
+                            <p style="margin: 12px 0 0; font-size: 14px; color: #718096;">
+                              Fee: ₦{{ txn.fees|floatformat:2|intcomma }} • Net: ₦{{ txn.net_amount|floatformat:2|intcomma }}
+                            </p>
+                            {% endif %}
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Transaction Details -->
+                  <tr>
+                    <td style="padding: 32px 24px; background-color: #f8f9fa; border-radius: 8px; margin-bottom: 24px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                        <tr>
+                          <td>
+                            <h3 style="margin: 0 0 20px; font-size: 16px; font-weight: 700; color: #1a1a1a;">
+                              Transaction Details
+                            </h3>
+                          </td>
+                        </tr>
+
+                        <!-- Reference -->
+                        <tr>
+                          <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Reference
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600; word-break: break-all;">
+                                    {{ txn.reference }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+
+                        <!-- Type -->
+                        <tr>
+                          <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Type
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600;">
+                                    {% if txn.is_reversal %}
+                                      Reversal
+                                    {% elif txn.loan %}
+                                      Loan Disbursement
+                                    {% else %}
+                                      {{ txn.get_transaction_type_display }}
+                                    {% endif %}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+
+                        <!-- Status -->
+                        <tr>
+                          <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Status
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <span style="display: inline-block; padding: 4px 12px; font-size: 12px; font-weight: 600; border-radius: 12px; {% if txn.status == 'success' %}background-color: #d1fae5; color: #065f46;{% elif txn.status == 'failed' %}background-color: #fee2e2; color: #991b1b;{% elif txn.status == 'reversed' %}background-color: #e5e7eb; color: #1f2937;{% else %}background-color: #fef3c7; color: #92400e;{% endif %}">
+                                    {{ txn.get_status_display }}
+                                  </span>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+
+                        <!-- Date -->
+                        <tr>
+                          <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Date
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600;">
+                                    {{ txn.created_at|date:"F d, Y" }} at {{ txn.created_at|time:"g:i A" }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+
+                        {% if txn.narration %}
+                        <!-- Narration -->
+                        <tr>
+                          <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Description
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600;">
+                                    {{ txn.narration }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+
+                        {% if txn.transaction_type == 'transfer' and txn.receiver %}
+                        <!-- Receiver -->
+                        <tr>
+                          <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Recipient
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600;">
+                                    {{ txn.receiver.user.get_full_name|default:txn.receiver.user.username }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+
+                        {% if txn.transaction_type == 'withdrawal' and txn.receiver_bank_account_number %}
+                        <!-- Bank Details -->
+                        <tr>
+                          <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Bank
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600;">
+                                    {{ txn.receiver_bank }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 12px 0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Account
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600;">
+                                    {{ txn.receiver_bank_account_number }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+
+                        {% if txn.transaction_type == 'deposit' and txn.sender_bank_account_number %}
+                        <!-- Sender Bank Details -->
+                        <tr>
+                          <td style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    From
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600;">
+                                    {{ txn.sender_bank_account_name }}
+                                  </p>
+                                  <p style="margin: 4px 0 0; font-size: 12px; color: #718096;">
+                                    {{ txn.sender_bank }} - {{ txn.sender_bank_account_number }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+
+                        {% if txn.loan %}
+                        <!-- Loan Details -->
+                        <tr>
+                          <td style="padding: 12px 0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Loan ID
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600;">
+                                    {{ txn.loan.id }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+
+                        {% if txn.is_reversal and txn.reversed_from %}
+                        <!-- Original Transaction -->
+                        <tr>
+                          <td style="padding: 12px 0;">
+                            <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+                              <tr>
+                                <td style="width: 40%; vertical-align: top;">
+                                  <p style="margin: 0; font-size: 14px; color: #718096; font-weight: 500;">
+                                    Original Ref
+                                  </p>
+                                </td>
+                                <td style="width: 60%; vertical-align: top; text-align: right;">
+                                  <p style="margin: 0; font-size: 14px; color: #1a1a1a; font-weight: 600; word-break: break-all;">
+                                    {{ txn.reversed_from.reference }}
+                                  </p>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                        {% endif %}
+
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Call to Action -->
+                  <tr>
+                    <td style="padding: 32px 0 24px; text-align: center;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          <td style="border-radius: 8px; background-color: #0d4f4f;">
+                            <a target="_blank" href="{{ app.frontend_link }}transactions/{{ txn.id }}/" style="display: inline-block; padding: 14px 32px; font-size: 15px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px;">
+                              View Transaction Details
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  {% if txn.status == 'failed' or txn.status == 'pending' %}
+                  <!-- Support Info -->
+                  <tr>
+                    <td style="padding: 24px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+                      <p style="margin: 0 0 8px; font-size: 14px; font-weight: 600; color: #92400e;">
+                        {% if txn.status == 'failed' %}Need Help?{% else %}Processing Your Transaction{% endif %}
+                      </p>
+                      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #78350f;">
+                        {% if txn.status == 'failed' %}
+                          If you have any questions about this transaction or need assistance, please contact our support team at
+                          <a href="mailto:{{ app.support_email }}" style="color: #92400e; text-decoration: underline;">{{ app.support_email }}</a>
+                          with the transaction reference above.
+                        {% else %}
+                          Your transaction is being processed. This usually takes a few minutes. We'll notify you once it's completed.
+                        {% endif %}
+                      </p>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- Security Notice -->
+                  <tr>
+                    <td style="padding-top: 32px;">
+                      <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #718096; text-align: center;">
+                        <strong>Security Notice:</strong> Never share your account details, password, or OTP with anyone. {{ app.name }} will never ask for your password via email or phone.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Signature -->
+                  <tr>
+                    <td style="padding-top: 32px; border-top: 1px solid #e2e8f0; margin-top: 32px;">
+                      <p style="margin: 0 0 8px; font-size: 15px; color: #1a1a1a;">
+                        Best regards,
+                      </p>
+                      <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1a1a1a;">
+                        The {{ app.name }} Team
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background-color: #f7fafc; padding: 40px 48px; text-align: center;">
+                <table cellpadding="0" cellspacing="0" role="presentation" style="width: 100%;">
+
+                  <!-- Social Icons -->
+                  {% if social %}
+                  <tr>
+                    <td style="padding-bottom: 24px;">
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          {% if social.tiktok_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.tiktok_link }}" style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/tiktok.png" alt="TikTok" style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.linkedin_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.linkedin_link }}" style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/linkedin.png" alt="LinkedIn" style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.twitter_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.twitter_link }}" style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/twitterx.png" alt="X" style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.facebook_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.facebook_link }}" style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/facebook-new.png" alt="Facebook" style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                          {% if social.instagram_link %}
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ social.instagram_link }}" style="color: #718096; text-decoration: none;">
+                              <img src="https://img.icons8.com/ios-filled/50/000000/instagram-new.png" alt="Instagram" style="width: 24px; height: 24px; display: block; opacity: 0.6;">
+                            </a>
+                          </td>
+                          {% endif %}
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  {% endif %}
+
+                  <!-- Company Info -->
+                  <tr>
+                    <td style="padding-bottom: 16px;">
+                      <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #718096;">
+                        © {% now "Y" %} {{ company.name }}. All rights reserved.
+                      </p>
+                      {% if company.address %}
+                      <p style="margin: 8px 0 0; font-size: 12px; line-height: 1.5; color: #a0aec0;">
+                        {{ company.address }}
+                      </p>
+                      {% endif %}
+                    </td>
+                  </tr>
+
+                  <!-- Footer Links -->
+                  <tr>
+                    <td>
+                      <table cellpadding="0" cellspacing="0" role="presentation" style="margin: 0 auto;">
+                        <tr>
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ app.privacy_policy_url }}" style="font-size: 12px; color: #0d4f4f; text-decoration: none;">Privacy Policy</a>
+                          </td>
+                          <td style="padding: 0 8px; color: #cbd5e0;">|</td>
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ app.terms_of_service_url }}" style="font-size: 12px; color: #0d4f4f; text-decoration: none;">Terms of Service</a>
+                          </td>
+                          <td style="padding: 0 8px; color: #cbd5e0;">|</td>
+                          <td style="padding: 0 8px;">
+                            <a target="_blank" href="{{ app.unsubscribe_url }}" style="font-size: 12px; color: #0d4f4f; text-decoration: none;">Unsubscribe</a>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Email Preference Note -->
+                  <tr>
+                    <td style="padding-top: 16px;">
+                      <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #a0aec0;">
+                        You're receiving this email because a transaction occurred on your {{ app.name }} account.
+                      </p>
+                      <p style="margin: 8px 0 0; font-size: 11px; line-height: 1.5; color: #a0aec0;">
+                        Powered by <a target="_blank" href="{{ app.tws_link }}" style="color: #0d4f4f; text-decoration: none;">Jowi Studio</a>.
+                      </p>
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+          </table>
+          <!-- End Main Container -->
+
+        </td>
+      </tr>
+    </table>
+    <!-- End Outer Table -->
+
+  </div>
+</body>
+
+</html>

@@ -1,0 +1,122 @@
+import { apiClient } from "../ApiClient";
+import { BackendRoutes } from "../BackendRoutes";
+import type {
+  GetOnboardingTokenResponse,
+  EmailVerificationResponse,
+  SetUsernameRequest,
+  SetUsernameResponse,
+  RegisterResponseType,
+  CheckUsernameResponse,
+} from "../types/auth";
+
+/* -------------------- TYPES -------------------- */
+
+interface GetOnboardingTokenIn {
+  email: string;
+  password: string;
+}
+
+interface SendEmailOtpIn {
+  email: string;
+}
+
+interface CheckEmailOtpIn {
+  email: string;
+  otp: string;
+}
+
+interface OtpOut {
+  detail: string;
+  code: string;
+}
+
+/* -------------------- SERVICE -------------------- */
+
+export class OnboardingService {
+  /**
+   * Authenticate a user who hasn't completed onboarding and receive an
+   * onboarding token. Only works while onboarding is incomplete.
+   */
+  static async getOnboardingToken(
+    data: GetOnboardingTokenIn
+  ): Promise<GetOnboardingTokenResponse> {
+    const res = await apiClient.post<GetOnboardingTokenResponse>(
+      BackendRoutes.getOnboardingToken,
+      data,
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
+  /** Send email verification OTP during onboarding */
+  static async sendEmailOtp(data: SendEmailOtpIn): Promise<OtpOut> {
+    const res = await apiClient.post<OtpOut>(
+      BackendRoutes.onboardingSendEmailOtp,
+      data,
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
+  /** Verify email OTP during onboarding. Advances onboarding on success. */
+  static async checkEmailOtp(
+    data: CheckEmailOtpIn
+  ): Promise<EmailVerificationResponse> {
+    const res = await apiClient.post<EmailVerificationResponse>(
+      BackendRoutes.onboardingCheckEmailOtp,
+      data,
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
+  /** Set username during onboarding. Requires onboarding token. */
+  static async setUsername(data: SetUsernameRequest): Promise<SetUsernameResponse> {
+    const res = await apiClient.post<SetUsernameResponse>(
+      BackendRoutes.onboardingSetUsername,
+      data,
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
+  /**
+   * Upload profile picture during onboarding. Uses multipart/form-data.
+   * Requires onboarding token. Advances onboarding on success.
+   */
+  static async setProfilePicture(
+    onboardingToken: string,
+    file: File
+  ): Promise<RegisterResponseType> {
+    const formData = new FormData();
+    formData.append("onboarding_token", onboardingToken);
+    formData.append("profile_picture", file);
+    console.log("Uploading ...", { onboardingToken, file, formData });
+
+    const res = await apiClient.post<RegisterResponseType>(
+      BackendRoutes.onboardingSetProfilePicture,
+      formData,
+      {
+        requiresAuth: false,
+        headers: {
+          // Let browser set Content-Type with boundary for FormData
+          // "Content-Type": "multipart/form-data",
+          "Content-Type": undefined as any,
+        },
+      }
+    );
+    return res.data;
+  }
+
+  /** Check if a username is available */
+  static async checkUsername(username: string): Promise<CheckUsernameResponse> {
+    const res = await apiClient.post<CheckUsernameResponse>(
+      BackendRoutes.checkUsername,
+      { username },
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+}
+
+export default OnboardingService;

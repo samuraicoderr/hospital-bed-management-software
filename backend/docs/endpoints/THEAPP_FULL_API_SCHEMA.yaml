@@ -1,0 +1,1399 @@
+openapi: 3.0.3
+info:
+  title: THEAPP API
+  version: 1.0.0
+  description: Backend API documentation for THEAPP
+paths:
+  /api/v1/auth/2fa/check_2fa_otp/:
+    post:
+      operationId: api_v1_auth_2fa_check_2fa_otp_create
+      description: |-
+        Verify the TOTP code for the authenticated user.
+        Raises ValidationError on invalid code.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TFA_Otp'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/TFA_Otp'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TFA_Otp'
+          description: ''
+  /api/v1/auth/2fa/request_qr_code/:
+    post:
+      operationId: api_v1_auth_2fa_request_qr_code_create
+      description: |-
+        Returns a short-lived signed URL for the QR image and the raw otpauth URI.
+
+        Prefer the `qrcode_uri` — render the QR yourself on the frontend.
+        **DO NOT store the QR code or URI in localStorage or any browser storage.**
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BarcodeStuff'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/BarcodeStuff'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BarcodeStuff'
+          description: ''
+  /api/v1/auth/2fa/reset_recovery_codes/:
+    post:
+      operationId: api_v1_auth_2fa_reset_recovery_codes_create
+      description: |-
+        Regenerate all recovery codes for the authenticated user.
+        Requires password confirmation. Codes are shown once and never again.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetRecoveryCodes'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ResetRecoveryCodes'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetRecoveryCodes'
+          description: ''
+  /api/v1/auth/2fa/send_2fa_otp/:
+    post:
+      operationId: api_v1_auth_2fa_send_2fa_otp_create
+      description: |-
+        Send the user's TOTP code via their configured channel.
+        Accepts either an authenticated session or a short-lived TFA token
+        (used during the login 2FA challenge flow).
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TFA_'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/TFA_'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TFA_'
+          description: ''
+  /api/v1/auth/delete_me/:
+    delete:
+      operationId: api_v1_auth_delete_me_destroy
+      description: |-
+        Soft/hard delete the authenticated user's account.
+        TODO: implement account deletion policy (soft-delete, data retention, etc.)
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/join_waitlist/:
+    post:
+      operationId: api_v1_auth_join_waitlist_create
+      description: |-
+        Handles registration, onboarding, OTP flows, password management,
+        2FA setup, and recovery code management.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WaitList'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/WaitList'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WaitList'
+          description: ''
+  /api/v1/auth/me/:
+    get:
+      operationId: api_v1_auth_me_retrieve
+      description: Return the authenticated user's profile.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/onboarding/email/check_email_verification_otp/:
+    post:
+      operationId: api_v1_auth_onboarding_email_check_email_verification_otp_create
+      description: |-
+        Verify the email OTP. On success, marks email as verified and
+        advances onboarding. Raises ValidationError on invalid/expired OTP.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerification'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/EmailVerification'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailVerification'
+          description: ''
+  /api/v1/auth/onboarding/email/send_email_verification_otp/:
+    post:
+      operationId: api_v1_auth_onboarding_email_send_email_verification_otp_create
+      description: Send a verification OTP to the user's email address.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerification'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/EmailVerification'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailVerification'
+          description: ''
+  /api/v1/auth/onboarding/get_onboarding_token/:
+    post:
+      operationId: api_v1_auth_onboarding_get_onboarding_token_create
+      description: |-
+        Authenticate the user and return an onboarding token.
+        Only works while onboarding is incomplete.
+        Token expires after `settings.ONBOARDING_TOKEN_EXPIRY_TIME_SECONDS`.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetOboardingToken'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/GetOboardingToken'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOboardingToken'
+          description: ''
+  /api/v1/auth/onboarding/phone/check_phone_verification_otp/:
+    post:
+      operationId: api_v1_auth_onboarding_phone_check_phone_verification_otp_create
+      description: |-
+        Verify the phone OTP. On success, marks phone as verified and
+        advances onboarding. Raises ValidationError on invalid/expired OTP.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneVerification'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PhoneVerification'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneVerification'
+          description: ''
+  /api/v1/auth/onboarding/phone/send_phone_verification_otp/:
+    post:
+      operationId: api_v1_auth_onboarding_phone_send_phone_verification_otp_create
+      description: Send a verification OTP to the user's phone number.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneVerification'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PhoneVerification'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneVerification'
+          description: ''
+  /api/v1/auth/onboarding/set_profile_picture/:
+    post:
+      operationId: api_v1_auth_onboarding_set_profile_picture_create
+      description: |-
+        Upload profile picture during onboarding.
+        Requires a valid onboarding token. Advances onboarding on success.
+      tags:
+      - auth
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangeProfilePicture'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangeProfilePicture'
+          '*/*':
+            schema:
+              $ref: '#/components/schemas/ChangeProfilePicture'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUser'
+          description: ''
+  /api/v1/auth/onboarding/set_username/:
+    post:
+      operationId: api_v1_auth_onboarding_set_username_create
+      description: |-
+        Set the user's username during onboarding.
+        Requires a valid onboarding token. Advances onboarding on success.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeUserName'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ChangeUserName'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeUserName'
+          description: ''
+  /api/v1/auth/password/:
+    put:
+      operationId: api_v1_auth_password_update
+      description: Change password for an authenticated user who knows their current
+        password.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PasswordReset'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordReset'
+          description: ''
+  /api/v1/auth/password/reset_forgot_password/:
+    put:
+      operationId: api_v1_auth_password_reset_forgot_password_update
+      description: Reset password using an OTP sent to email or phone.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetForgottenPassword'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ResetForgottenPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetForgottenPassword'
+          description: ''
+  /api/v1/auth/password/send_forgot_password_otp/:
+    put:
+      operationId: api_v1_auth_password_send_forgot_password_otp_update
+      description: |-
+        Send a password-reset OTP to the user's email or phone.
+        Always responds with 200 to avoid leaking account existence.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailOrPhone'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/EmailOrPhone'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmailOrPhone'
+          description: ''
+  /api/v1/auth/qr_image_for_2fa/{token}/:
+    get:
+      operationId: api_v1_auth_qr_image_for_2fa_retrieve
+      description: |-
+        Renders a QR code PNG for the given short-lived signed token.
+        Used by email clients or frontends that cannot render otpauth URIs directly.
+      parameters:
+      - in: path
+        name: token
+        schema:
+          type: string
+          pattern: ^.*$
+        required: true
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/auth/register/:
+    post:
+      operationId: api_v1_auth_register_create
+      description: |-
+        Register a new user account.
+        Returns the created user and advances onboarding to the first real step.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/CreateUser'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUser'
+          description: ''
+  /api/v1/auth/update_me/:
+    patch:
+      operationId: api_v1_auth_update_me_partial_update
+      description: Partially update the authenticated user's profile.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUser'
+          description: ''
+  /api/v1/login/token/1stfactor/:
+    post:
+      operationId: api_v1_login_token_1stfactor_create
+      description: |-
+        Return access and refresh token if 2FA is disabled
+
+        since 2fa will be ENABLED by default and cannot be disabled, this returns
+        ```json
+        {
+            "tfa_token": "<token>"  // expires in 5 minutes
+        }
+        ```
+
+        CALL THE Second Factor endpoint with this `tfa_token` bro to get your { access_token, refresh_token }
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FirstFactor'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/FirstFactor'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FirstFactor'
+          description: ''
+  /api/v1/login/token/2stfactor/:
+    post:
+      operationId: api_v1_login_token_2stfactor_create
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SecondFactor'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/SecondFactor'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SecondFactor'
+          description: ''
+  /api/v1/login/token/refresh/:
+    post:
+      operationId: api_v1_login_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/v1/notifications/:
+    get:
+      operationId: api_v1_notifications_list
+      description: |-
+        ViewSet for managing user notifications.
+
+        Provides list, retrieve, mark as read, mark all as read, and unread count endpoints.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/{id}/:
+    get:
+      operationId: api_v1_notifications_retrieve
+      description: |-
+        ViewSet for managing user notifications.
+
+        Provides list, retrieve, mark as read, mark all as read, and unread count endpoints.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/{id}/read/:
+    patch:
+      operationId: api_v1_notifications_read_partial_update
+      description: |-
+        PATCH /api/v1/notifications/<id>/read/
+        Marks a single notification as read.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/mark-all-read/:
+    post:
+      operationId: api_v1_notifications_mark_all_read_create
+      description: |-
+        POST /api/v1/notifications/mark-all-read/
+        Marks all of the current user's unread notifications as read.
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/notifications/unread-count/:
+    get:
+      operationId: api_v1_notifications_unread_count_retrieve
+      description: |-
+        GET /api/v1/notifications/unread-count/
+        Returns the count of unread notifications for the current user.
+      tags:
+      - notifications
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/v1/oauth/{provider}/callback/:
+    get:
+      operationId: api_v1_oauth_callback_retrieve
+      description: |-
+        OAuth callback endpoint that providers (e.g. Google) redirect to after authorization.
+
+        Accepts OAuth query parameters (code, state, etc.) via GET, completes the
+        authentication flow, and returns a JWT response.
+
+        GET /api/v1/oauth/{provider}/callback/?code=...&state=...
+      parameters:
+      - in: path
+        name: provider
+        schema:
+          type: string
+        required: true
+      tags:
+      - oauth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/oauth/{provider}/login-or-register/:
+    post:
+      operationId: api_v1_oauth_login_or_register_create
+      description: Provider-based OAuth login endpoint for code exchange flows.
+      parameters:
+      - in: path
+        name: provider
+        schema:
+          type: string
+        required: true
+      tags:
+      - oauth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OAuthCodeExchange'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/OAuthCodeExchange'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OAuthCodeExchange'
+          description: ''
+  /api/v1/oauth/get_providers/:
+    get:
+      operationId: api_v1_oauth_get_providers_retrieve
+      description: Provider-based OAuth login endpoint for code exchange flows.
+      tags:
+      - oauth
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/v1/reset/:
+    post:
+      operationId: api_v1_reset_create
+      description: |-
+        Handles POST /password/reset/
+
+        🔹 What it does:
+            - Accepts email
+            - Generates reset token
+            - Emits reset_password_token_created signal
+
+        🔹 Where to customize:
+            - Override `create()` to:
+                • Add rate limiting
+                • Add audit logging
+                • Customize response payload
+                • Block inactive users
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Email'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Email'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Email'
+          description: ''
+  /api/v1/reset/confirm/:
+    post:
+      operationId: api_v1_reset_confirm_create
+      description: |-
+        Override this if you want:
+            • Stronger password rules
+            • Extra logging
+            • Notify user after password change
+            • Invalidate all sessions
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PasswordToken'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /api/v1/reset/confirm/render_reset_page/:
+    get:
+      operationId: api_v1_reset_confirm_render_reset_page_retrieve
+      description: |-
+        Custom GET handler for browser-based reset flow.
+
+        This does NOT affect API behavior.
+      tags:
+      - password_reset
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordToken'
+          description: ''
+  /api/v1/reset/validate_token/:
+    post:
+      operationId: api_v1_reset_validate_token_create
+      description: |-
+        Handles POST /password/reset/validate_token/
+
+        🔹 What it does:
+            - Checks if token exists
+            - Checks if token expired
+            - Returns validity response
+
+        🔹 Where to customize:
+            - Override `create()` to:
+                • Add custom expiration logic
+                • Add attempt tracking
+                • Add logging
+      tags:
+      - password_reset
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/ResetToken'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetToken'
+          description: ''
+  /api/v1/users/delete_me/:
+    delete:
+      operationId: api_v1_users_delete_me_destroy
+      description: |-
+        Soft/hard delete the authenticated user's account.
+        TODO: implement account deletion policy (soft-delete, data retention, etc.)
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/users/me/:
+    get:
+      operationId: api_v1_users_me_retrieve
+      description: Return the authenticated user's profile.
+      tags:
+      - user
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/users/update_me/:
+    patch:
+      operationId: api_v1_users_update_me_partial_update
+      description: Partially update the authenticated user's profile.
+      tags:
+      - user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateUser'
+          description: ''
+components:
+  schemas:
+    BarcodeStuff:
+      type: object
+      description: Input/output for the request_qr_code endpoint.
+      properties:
+        password:
+          type: string
+          writeOnly: true
+        qrcode_uri:
+          type: string
+          readOnly: true
+        image_url:
+          type: string
+          readOnly: true
+      required:
+      - image_url
+      - password
+      - qrcode_uri
+    ChangeProfilePicture:
+      type: object
+      properties:
+        onboarding_token:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        profile_picture:
+          type: string
+          format: binary
+      required:
+      - onboarding_token
+      - profile_picture
+    ChangeUserName:
+      type: object
+      properties:
+        onboarding_token:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        new_username:
+          type: string
+          writeOnly: true
+          maxLength: 150
+      required:
+      - onboarding_token
+    CreateUser:
+      type: object
+      description: |-
+        Used for registration input validation and the registration response.
+        User creation is handled explicitly in the view — do not call .save() on this serializer.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 128
+        onboarding_status:
+          allOf:
+          - $ref: '#/components/schemas/OnboardingStatusEnum'
+          readOnly: true
+        onboarding_flow:
+          type: array
+          items: {}
+          readOnly: true
+        is_email_verified:
+          type: boolean
+          readOnly: true
+        is_phone_number_verified:
+          type: boolean
+          readOnly: true
+        onboarding_token:
+          type: string
+          readOnly: true
+      required:
+      - id
+      - is_email_verified
+      - is_phone_number_verified
+      - onboarding_flow
+      - onboarding_status
+      - onboarding_token
+      - password
+      - username
+    Email:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    EmailOrPhone:
+      type: object
+      description: Accepts email or phone as a single unified field.
+      properties:
+        email_or_phone_number:
+          type: string
+      required:
+      - email_or_phone_number
+    EmailVerification:
+      type: object
+      description: Used for both sending and checking email OTPs. `otp` is optional
+        on send.
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+          writeOnly: true
+          maxLength: 10
+      required:
+      - email
+    FirstFactor:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - email
+      - password
+    GetOboardingToken:
+      type: object
+      description: Authenticates a user who hasn't completed onboarding and returns
+        a token.
+      properties:
+        email:
+          type: string
+          format: email
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        onboarding_token:
+          type: string
+          readOnly: true
+          maxLength: 500
+      required:
+      - email
+      - onboarding_token
+      - password
+    OAuthCodeExchange:
+      type: object
+      description: Payload for provider authorization code exchange.
+      properties:
+        code:
+          type: string
+          writeOnly: true
+          maxLength: 4096
+        redirect_uri:
+          type: string
+          format: uri
+          writeOnly: true
+        state:
+          type: string
+          writeOnly: true
+          maxLength: 1024
+        code_verifier:
+          type: string
+          writeOnly: true
+          maxLength: 2048
+      required:
+      - code
+    OnboardingStatusEnum:
+      enum:
+      - needs_basic_information
+      - needs_email_verification
+      - needs_phone_verification
+      - needs_profile_username
+      - needs_profile_picture
+      - completed
+      type: string
+      description: |-
+        * `needs_basic_information` - Needs Basic Information
+        * `needs_email_verification` - Needs Email Verification
+        * `needs_phone_verification` - Needs Phone Verification
+        * `needs_profile_username` - Needs Profile Username
+        * `needs_profile_picture` - Needs Profile Picture
+        * `completed` - Completed
+    PasswordReset:
+      type: object
+      description: For authenticated password change (requires current password).
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        new_password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+        repeat_new_password:
+          type: string
+          writeOnly: true
+          maxLength: 500
+      required:
+      - new_password
+      - old_password
+      - repeat_new_password
+    PasswordToken:
+      type: object
+      properties:
+        password:
+          type: string
+        token:
+          type: string
+      required:
+      - password
+      - token
+    PatchedUpdateUser:
+      type: object
+      description: Serializer for partial profile updates by an authenticated user.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        two_factor_enabled:
+          type: boolean
+    PhoneVerification:
+      type: object
+      description: |-
+        Used for both sending and checking phone OTPs. `otp` is optional on send.
+        Region is intentionally not set here — enforced at the country level elsewhere.
+      properties:
+        phone_number:
+          type: string
+        otp:
+          type: string
+          writeOnly: true
+          maxLength: 10
+      required:
+      - phone_number
+    ResetForgottenPassword:
+      type: object
+      description: Completes a forgot-password reset using an OTP.
+      properties:
+        email_or_phone_number:
+          type: string
+        otp:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        repeat_password:
+          type: string
+          writeOnly: true
+      required:
+      - email_or_phone_number
+      - otp
+      - password
+      - repeat_password
+    ResetRecoveryCodes:
+      type: object
+      description: Input for recovery code regeneration. Codes are write-once, read-never.
+      properties:
+        password:
+          type: string
+          writeOnly: true
+        recovery_codes:
+          type: array
+          items:
+            type: string
+          readOnly: true
+      required:
+      - password
+      - recovery_codes
+    ResetToken:
+      type: object
+      properties:
+        token:
+          type: string
+      required:
+      - token
+    SecondFactor:
+      type: object
+      properties:
+        otp:
+          type: string
+          writeOnly: true
+          maxLength: 10
+        tfa_token:
+          type: string
+          writeOnly: true
+          maxLength: 200
+      required:
+      - otp
+      - tfa_token
+    TFA_:
+      type: object
+      description: Carries a TFA challenge token (used in the unauthenticated send-2fa-otp
+        flow).
+      properties:
+        tfa_token:
+          type: string
+          writeOnly: true
+          maxLength: 200
+      required:
+      - tfa_token
+    TFA_Otp:
+      type: object
+      description: |-
+        Carries only the OTP code for the check-2fa-otp endpoint.
+        Does NOT extend TFA_Serializer — check_2fa_otp requires IsAuthenticated,
+        so the user is already identified via the session; no tfa_token is needed.
+      properties:
+        otp:
+          type: string
+          writeOnly: true
+          maxLength: 10
+      required:
+      - otp
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
+    UpdateUser:
+      type: object
+      description: Serializer for partial profile updates by an authenticated user.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        two_factor_enabled:
+          type: boolean
+      required:
+      - id
+      - username
+    User:
+      type: object
+      description: Read-only serializer for returning user profile data.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+        first_name:
+          type: string
+          readOnly: true
+        last_name:
+          type: string
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        profile_picture:
+          type: string
+          format: uri
+          nullable: true
+        picture_url:
+          type: string
+          format: uri
+          readOnly: true
+          nullable: true
+          title: PictureUrl
+        phone_number:
+          type: string
+          readOnly: true
+          nullable: true
+        onboarding_status:
+          allOf:
+          - $ref: '#/components/schemas/OnboardingStatusEnum'
+          readOnly: true
+        onboarding_flow:
+          type: array
+          items: {}
+          readOnly: true
+        is_email_verified:
+          type: boolean
+          readOnly: true
+        is_phone_number_verified:
+          type: boolean
+          readOnly: true
+        two_factor_enabled:
+          type: boolean
+          readOnly: true
+      required:
+      - email
+      - first_name
+      - id
+      - is_email_verified
+      - is_phone_number_verified
+      - last_name
+      - onboarding_flow
+      - onboarding_status
+      - phone_number
+      - picture_url
+      - two_factor_enabled
+      - username
+    WaitList:
+      type: object
+      description: Input/output serializer for waitlist entries. ip_address is never
+        exposed.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - email
+      - id
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

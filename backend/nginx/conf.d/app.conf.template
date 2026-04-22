@@ -1,0 +1,76 @@
+# HTTP server for initial setup and ACME challenges
+server {
+    listen 80;
+    server_name ${DOMAIN};
+    
+    # For certbot challenge
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    
+    # Uncomment the line below when certs are ready (will be done by start script)
+    # return 301 https://$host$request_uri;
+
+    location / {
+        
+        # Until then, proxy to the Django app directly
+        proxy_pass http://django_app:9000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # WebSocket support
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+
+# HTTPS server (this block will be enabled by the start script when certs exist)
+# server {
+#     listen 443 ssl http2;
+#     server_name ${DOMAIN};
+#     
+#     ssl_certificate /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+#     ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+#     
+#     # Static files
+#     location /static/ {
+#         alias /app/static/;
+#         expires 30d;
+#     }
+#     
+#     # Media files
+#     location /media/ {
+#         alias /app/media/;
+#         expires 30d;
+#     }
+#     
+#     # Proxy requests to Django
+#     location / {
+#         proxy_pass http://django_app:9000;
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto $scheme;
+#         proxy_redirect off;
+#         
+#         # WebSocket support (if needed)
+#         proxy_http_version 1.1;
+#         proxy_set_header Upgrade $http_upgrade;
+#         proxy_set_header Connection "upgrade";
+#         
+#         # Timeouts
+#         proxy_connect_timeout 60s;
+#         proxy_send_timeout 60s;
+#         proxy_read_timeout 60s;
+#     }
+#     
+#     # Error pages
+#     error_page 404 /404.html;
+#     error_page 500 502 503 504 /50x.html;
+#     
+#     # Large file uploads
+#     client_max_body_size 100M;
+# }
