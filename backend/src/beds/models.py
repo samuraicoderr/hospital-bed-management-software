@@ -129,7 +129,7 @@ class Bed(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="reserved_bed"
+        related_name="currently_reserved_bed"
     )
     reserved_until = models.DateTimeField(null=True, blank=True)
 

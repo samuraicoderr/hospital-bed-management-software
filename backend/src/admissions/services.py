@@ -107,3 +107,67 @@ class AdmissionService:
             queryset = queryset.filter(status=status)
 
         return queryset.select_related("patient", "assigned_bed").order_by("priority", "waiting_since")
+
+
+class TransferService:
+    """Service for patient transfer operations."""
+
+    @staticmethod
+    def approve_transfer(transfer, approved_by):
+        """Approve a transfer request."""
+        with transaction.atomic():
+            transfer.approve(approved_by)
+
+            AuditService.log_action(
+                action="update",
+                model_name="Transfer",
+                object_id=str(transfer.id),
+                user=approved_by,
+                details={"action": "approved"}
+            )
+
+            return transfer
+
+    @staticmethod
+    def complete_transfer(transfer, completed_by):
+        """Complete an approved transfer."""
+        with transaction.atomic():
+            # Update original bed
+            if transfer.from_bed:
+                transfer.from_bed.mark_for_cleaning(
+                    user=completed_by,
+                    priority="urgent" if transfer.transfer_type == TransferType.INTER_HOSPITAL else "routine"
+                )
+
+            # Update admission
+            admission = transfer.admission
+            admission.bed = transfer.to_bed
+            admission.department = transfer.to_department
+            if transfer.from_hospital != transfer.to_hospital:
+                admission.hospital = transfer.to_hospital
+            admission.save()
+
+            # Complete transfer
+            transfer.complete(completed_by)
+
+            # Update destination bed
+            if transfer.to_bed:
+                transfer.to_bed.change_status(
+                    new_status=BedStatus.OCCUPIED,
+                    user=completed_by,
+                    reason=f"Transfer completed from {transfer.from_bed}"
+                )
+                transfer.to_bed.current_admission = admission
+                transfer.to_bed.save()
+
+            AuditService.log_action(
+                action="update",
+                model_name="Transfer",
+                object_id=str(transfer.id),
+                user=completed_by,
+                details={"action": "completed"}
+            )
+
+            return transfer
+
+

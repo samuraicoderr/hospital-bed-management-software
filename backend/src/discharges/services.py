@@ -91,3 +91,4 @@ class DischargeService:
             hospital=hospital,
             status__in=["pending", "approved"]
         ).select_related("patient", "admission", "bed")
+

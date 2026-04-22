@@ -5,7 +5,7 @@ Serializers for bed models.
 from rest_framework import serializers
 
 from src.beds.models import Bed, EquipmentTag, BedStatusHistory
-from src.common.constants import BedStatus
+from src.common.constants import BedStatus, BedType
 
 
 class EquipmentTagSerializer(serializers.ModelSerializer):
