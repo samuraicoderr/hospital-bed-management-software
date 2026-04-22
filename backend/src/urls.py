@@ -20,13 +20,25 @@ from src.users.auth import (
 )
 from src.files.urls import files_router
 from src.users.urls import (
-    users_router, 
+    users_router,
     auth_router,
     oauth_router,
 )
 from src.common.urls import common_router
 from src.notifications.urls import notification_router
 from src.reset_password.routes import password_reset_router
+
+# BedFlow hospital management routers
+from src.organizations.views import organizations_router
+from src.beds.views import beds_router
+from src.patients.views import patients_router
+from src.admissions.views import admissions_router
+from src.discharges.views import discharges_router
+from src.housekeeping.views import housekeeping_router
+from src.dashboard.views import dashboard_router
+from src.reports.views import reports_router
+from src.alerts.views import alerts_router
+
 from .lib.django.superlazyroutertools import super_lazy_path
 
 
@@ -40,6 +52,16 @@ sub_routers = [
     [notification_router, "notifications"],
     # [common_router, "common"],
     [password_reset_router, "password_reset", "password_reset"],
+    # BedFlow routes
+    [organizations_router, "organizations"],
+    [beds_router, "beds"],
+    [patients_router, "patients"],
+    [admissions_router, "admissions"],
+    [discharges_router, "discharges"],
+    [housekeeping_router, "housekeeping"],
+    [dashboard_router, "dashboard"],
+    [reports_router, "reports"],
+    [alerts_router, "alerts"],
 ]
 
 

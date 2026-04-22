@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find . -type f -name *.md -o -name CLAUDE* -o -name .cursorrules)",
+      "Bash(find . -name settings*.py -not -path ./backend/.venv/*)",
+      "Bash(find ./backend -name settings*.py)",
+      "Bash(find ./backend/src -name *.py -path *config*)",
+      "mcp__ide__executeCode",
+      "Bash(sed -i 's/└── uv.lock                      # Locked dependency versions$/└── uv.lock                      # Locked dependency versions/' CLAUDE.md)",
+      "Bash(CLAUDE.md:*)"
+    ]
+  }
+}
