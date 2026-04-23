@@ -139,15 +139,3 @@ class HospitalStaffViewSet(viewsets.ModelViewSet):
     serializer_class = HospitalStaffSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ["hospital", "department", "role"]
-
-
-# DRF Router
-from rest_framework.routers import DefaultRouter
-
-organizations_router = DefaultRouter()
-organizations_router.register(r"organizations", OrganizationViewSet, basename="organization")
-organizations_router.register(r"hospitals", HospitalViewSet, basename="hospital")
-organizations_router.register(r"buildings", BuildingViewSet, basename="building")
-organizations_router.register(r"departments", DepartmentViewSet, basename="department")
-organizations_router.register(r"wards", WardViewSet, basename="ward")
-organizations_router.register(r"hospital-staff", HospitalStaffViewSet, basename="hospital-staff")

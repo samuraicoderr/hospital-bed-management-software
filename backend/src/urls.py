@@ -29,15 +29,15 @@ from src.notifications.urls import notification_router
 from src.reset_password.routes import password_reset_router
 
 # BedFlow hospital management routers
-from src.organizations.views import organizations_router
-from src.beds.views import beds_router
-from src.patients.views import patients_router
-from src.admissions.views import admissions_router
-from src.discharges.views import discharges_router
-from src.housekeeping.views import housekeeping_router
-from src.dashboard.views import dashboard_router
-from src.reports.views import reports_router
-from src.alerts.views import alerts_router
+from src.organizations.urls import organizations_router
+from src.beds.urls import beds_router
+from src.patients.urls import patients_router
+from src.admissions.urls import admissions_router
+from src.discharges.urls import discharges_router
+from src.housekeeping.urls import housekeeping_router
+from src.dashboard.urls import dashboard_router
+from src.reports.urls import reports_router
+from src.alerts.urls import alerts_router
 
 from .lib.django.superlazyroutertools import super_lazy_path
 

@@ -197,12 +197,3 @@ class TransferViewSet(viewsets.ModelViewSet):
                 {"error": str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-
-# DRF Router
-from rest_framework.routers import DefaultRouter
-
-admissions_router = DefaultRouter()
-admissions_router.register(r"admission-requests", AdmissionRequestViewSet, basename="admission-request")
-admissions_router.register(r"admissions", AdmissionViewSet, basename="admission")
-admissions_router.register(r"transfers", TransferViewSet, basename="transfer")

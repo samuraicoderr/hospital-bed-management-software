@@ -118,10 +118,3 @@ class HousekeepingStaffViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filterset_fields = ["hospital", "is_available"]
 
-
-# DRF Router
-from rest_framework.routers import DefaultRouter
-
-housekeeping_router = DefaultRouter()
-housekeeping_router.register(r"cleaning-tasks", CleaningTaskViewSet, basename="cleaning-task")
-housekeeping_router.register(r"housekeeping-staff", HousekeepingStaffViewSet, basename="housekeeping-staff")

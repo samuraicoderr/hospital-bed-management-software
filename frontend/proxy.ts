@@ -5,7 +5,7 @@ function hasAuthCookie(request: NextRequest): boolean {
   return request.cookies.get(AUTH_PRESENCE_COOKIE)?.value === "1";
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (hasAuthCookie(request)) {
     return NextResponse.next();
   }

@@ -13,6 +13,10 @@ class DischargeListSerializer(serializers.ModelSerializer):
     bed_code = serializers.CharField(source="bed.bed_code", read_only=True)
     status_display = serializers.CharField(source="get_status_display", read_only=True)
     discharge_type_display = serializers.CharField(source="get_discharge_type_display", read_only=True)
+    expected_turnover = serializers.SerializerMethodField()
+
+    def get_expected_turnover(self, obj):
+        return obj.turnover_minutes
 
     class Meta:
         model = Discharge

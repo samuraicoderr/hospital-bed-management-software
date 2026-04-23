@@ -61,7 +61,7 @@ class ViewSetHelperMixin(PaginationMixin):
         "default": EmptyFilterSet,
     }
     
-    filterset_class = filters['default'] # you probably want to set this in chiled class for swagger docs
+    filterset_class = None  # Let DjangoFilterBackend auto-generate from filterset_fields
 
     _has_auto_set_permissions = False   # This should always be False, coz when it's true we assume the admin_* permissions are set
     _use_filterset_class = True

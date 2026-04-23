@@ -97,10 +97,3 @@ class DashboardViewSet(viewsets.ViewSet):
             "available": [s.available_beds for s in snapshots],
             "occupied": [s.occupied_beds for s in snapshots],
         })
-
-
-# DRF Router
-from rest_framework.routers import DefaultRouter
-
-dashboard_router = DefaultRouter()
-dashboard_router.register(r"dashboard", DashboardViewSet, basename="dashboard")

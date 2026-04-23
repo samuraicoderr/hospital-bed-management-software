@@ -192,10 +192,3 @@ class EquipmentTagViewSet(viewsets.ModelViewSet):
     filterset_fields = ["category"]
     search_fields = ["name", "code"]
 
-
-# DRF Router
-from rest_framework.routers import DefaultRouter
-
-beds_router = DefaultRouter()
-beds_router.register(r"beds", BedViewSet, basename="bed")
-beds_router.register(r"equipment-tags", EquipmentTagViewSet, basename="equipment-tag")

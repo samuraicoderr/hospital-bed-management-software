@@ -6,6 +6,7 @@ export
 
 PY=3.14
 PROJECT_NAME=bedflow
+SERVER_PORT=9000
 
 .DEFAULT_GOAL := run
 
@@ -34,7 +35,7 @@ uninstall:
 
 
 runserver:
-	uv run python manage.py runserver 9000
+	uv run python manage.py runserver $(SERVER_PORT)
 
 
 run: runserver
@@ -121,22 +122,22 @@ collectstatic_force:
 
 
 gg:
-	gunicorn src.wsgi:application --bind 0.0.0.0:8000
+	gunicorn src.wsgi:application --bind 0.0.0.0:$(SERVER_PORT)
 
 g:
-	gunicorn src.wsgi:application --bind 0.0.0.0:9000
+	gunicorn src.wsgi:application --bind 0.0.0.0:$(SERVER_PORT)
 
 render-start-command:
 	gunicorn src.wsgi:application --bind 0.0.0.0:$PORT
 
 uvicorn:
-	uv run python -m uvicorn src.asgi:application --host 0.0.0.0 --port 9000
+	uv run python -m uvicorn src.asgi:application --host 0.0.0.0 --port $(SERVER_PORT)
 
 daphne:
-	uv run python -m daphne -b 0.0.0.0 -p 9000 src.asgi:application
+	uv run python -m daphne -b 0.0.0.0 -p $(SERVER_PORT) src.asgi:application
 
 daphne+:
-	uv run python -m watchfiles --filter python "uv run python -m daphne -b 0.0.0.0 -p 9000 src.asgi:application"
+	uv run python -m watchfiles --filter python "uv run python -m daphne -b 0.0.0.0 -p $(SERVER_PORT) src.asgi:application"
 
 redis:
 	@echo "Starting Redis..."

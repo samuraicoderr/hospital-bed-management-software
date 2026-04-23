@@ -10,7 +10,20 @@ from src.alerts.models import Alert, AlertConfiguration, UserAlertPreference
 class AlertListSerializer(serializers.ModelSerializer):
     severity_display = serializers.CharField(source="get_severity_display", read_only=True)
     alert_type_display = serializers.CharField(source="get_alert_type_display", read_only=True)
-    status_display = serializers.CharField(source="get_status_display", read_only=True)
+    status = serializers.SerializerMethodField()
+    status_display = serializers.SerializerMethodField()
+
+    def get_status(self, obj):
+        if obj.is_resolved:
+            return "resolved"
+        if obj.is_acknowledged:
+            return "acknowledged"
+        if obj.is_active:
+            return "active"
+        return "inactive"
+
+    def get_status_display(self, obj):
+        return self.get_status(obj).replace("_", " ").title()
 
     class Meta:
         model = Alert
@@ -24,8 +37,18 @@ class AlertListSerializer(serializers.ModelSerializer):
 class AlertDetailSerializer(serializers.ModelSerializer):
     severity_display = serializers.CharField(source="get_severity_display", read_only=True)
     alert_type_display = serializers.CharField(source="get_alert_type_display", read_only=True)
+    status = serializers.SerializerMethodField()
     acknowledged_by_name = serializers.CharField(source="acknowledged_by.get_name", read_only=True)
     resolved_by_name = serializers.CharField(source="resolved_by.get_name", read_only=True)
+
+    def get_status(self, obj):
+        if obj.is_resolved:
+            return "resolved"
+        if obj.is_acknowledged:
+            return "acknowledged"
+        if obj.is_active:
+            return "active"
+        return "inactive"
 
     class Meta:
         model = Alert

@@ -78,9 +78,3 @@ class ReportRunViewSet(viewsets.ReadOnlyModelViewSet):
         })
 
 
-# DRF Router
-from rest_framework.routers import DefaultRouter
-
-reports_router = DefaultRouter()
-reports_router.register(r"report-templates", ReportTemplateViewSet, basename="report-template")
-reports_router.register(r"report-runs", ReportRunViewSet, basename="report-run")

@@ -115,11 +115,3 @@ class DischargeViewSet(viewsets.ModelViewSet):
         from src.discharges.serializers import DischargeListSerializer
         serializer = DischargeListSerializer(pending, many=True)
         return Response(serializer.data)
-
-
-# DRF Router
-from rest_framework.routers import DefaultRouter
-from django.db import transaction
-
-discharges_router = DefaultRouter()
-discharges_router.register(r"discharges", DischargeViewSet, basename="discharge")

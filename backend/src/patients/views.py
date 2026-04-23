@@ -87,10 +87,3 @@ class ClinicalRequirementViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     filterset_fields = ["patient", "requirement_type", "priority"]
 
-
-# DRF Router
-from rest_framework.routers import DefaultRouter
-
-patients_router = DefaultRouter()
-patients_router.register(r"patients", PatientViewSet, basename="patient")
-patients_router.register(r"clinical-requirements", ClinicalRequirementViewSet, basename="clinical-requirement")

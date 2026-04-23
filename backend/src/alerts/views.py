@@ -25,7 +25,7 @@ class AlertViewSet(viewsets.ModelViewSet):
     queryset = Alert.objects.all()
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["status", "severity", "alert_type", "hospital"]
+    filterset_fields = ["is_active", "severity", "alert_type", "hospital"]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -95,10 +95,3 @@ class UserAlertPreferenceViewSet(viewsets.ModelViewSet):
         return self.queryset.filter(user=self.request.user)
 
 
-# DRF Router
-from rest_framework.routers import DefaultRouter
-
-alerts_router = DefaultRouter()
-alerts_router.register(r"alerts", AlertViewSet, basename="alert")
-alerts_router.register(r"alert-configurations", AlertConfigurationViewSet, basename="alert-configuration")
-alerts_router.register(r"alert-preferences", UserAlertPreferenceViewSet, basename="alert-preference")
