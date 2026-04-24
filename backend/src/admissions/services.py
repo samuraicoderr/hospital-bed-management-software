@@ -9,7 +9,7 @@ from rest_framework.exceptions import APIException
 
 from src.admissions.models import AdmissionRequest, Admission, Transfer
 from src.beds.models import Bed
-from src.common.constants import AdmissionStatus, TransferStatus, TransferType, BedStatus
+from src.common.constants import AdmissionStatus, TransferStatus, TransferType, BedStatus, BedType
 from src.audit.services import AuditService
 
 
@@ -107,6 +107,46 @@ class AdmissionService:
             queryset = queryset.filter(status=status)
 
         return queryset.select_related("patient", "assigned_bed").order_by("priority", "waiting_since")
+
+    @staticmethod
+    def suggest_beds_for_request(admission_request):
+        """
+        Suggest available beds for an admission request.
+        Per requirements 4.2.2 - Bed assignment suggestions.
+        """
+        from src.beds.services import BedService
+
+        hospital = admission_request.preferred_hospital
+        if not hospital:
+            return Bed.objects.none()
+
+        # Determine bed type from request
+        bed_type_map = {
+            "icu": BedType.ICU,
+            "isolation": BedType.ISOLATION,
+            "general": BedType.GENERAL,
+            "emergency": BedType.EMERGENCY,
+            "maternity": BedType.MATERNITY,
+        }
+        bed_type = bed_type_map.get(admission_request.required_bed_type)
+
+        # Use BedService to find matching beds
+        beds = BedService.find_available_beds(
+            hospital=hospital,
+            bed_type=bed_type,
+            requires_isolation=admission_request.requires_isolation or admission_request.required_bed_type == "isolation",
+            patient_gender=admission_request.patient.gender if admission_request.patient else None,
+        )
+
+        # Filter by preferred department if specified
+        if admission_request.preferred_department:
+            beds = beds.filter(ward__department=admission_request.preferred_department)
+
+        # Prioritize by isolation capability if needed
+        if admission_request.requires_isolation:
+            beds = beds.order_by("-is_isolation", "ward__department__name", "bed_number")
+
+        return beds
 
 
 class TransferService:

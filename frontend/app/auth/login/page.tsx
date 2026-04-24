@@ -146,7 +146,7 @@ function LoginPageContent() {
       </div>
 
       <p className="auth-footer">
-        Don&apos;t have an account? <Link href={Routes.register}>Create one</Link>
+        Don&apos;t have an account? <Link href={Routes.auth.register}>Create one</Link>
       </p>
     </div>
   );

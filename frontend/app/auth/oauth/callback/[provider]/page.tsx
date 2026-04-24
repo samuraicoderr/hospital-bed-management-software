@@ -126,7 +126,7 @@ function OAuthCallbackPageContent() {
       if (isMFARequired(response)) {
         // Store session token so the MFA verification page can use it
         sessionStorage.setItem("mfa_session_token", response.mfa_session_token);
-        router.replace(Routes.mfaVerify);
+        router.replace(Routes.auth.login);
         return;
       }
 
@@ -166,7 +166,7 @@ function OAuthCallbackPageContent() {
         </div>
         <button
           className="auth-oauth-btn"
-          onClick={() => router.replace(Routes.login || "/auth/login")}
+          onClick={() => router.replace(Routes.auth.login)}
         >
           Back to login
         </button>
@@ -186,7 +186,7 @@ function OAuthCallbackPageContent() {
           <button
             className="auth-oauth-btn"
             style={{ marginTop: "1rem" }}
-            onClick={() => router.replace(Routes.login || "/auth/login")}
+            onClick={() => router.replace(Routes.auth.login)}
           >
             Back to login
           </button>

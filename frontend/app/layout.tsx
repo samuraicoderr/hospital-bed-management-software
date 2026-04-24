@@ -21,9 +21,9 @@ const bobbleboddy = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Bedflow — Financial Planning Workspace",
+  title: "BedFlow — Hospital Bed Management System",
   description:
-    "Bedflow is a financial planning workspace for founders. Add a budget line and watch your income statement, runway, and investor deck update in real time.",
+    "Production-grade hospital bed management software for real-time patient flow, bed allocation, and operational visibility.",
 };
 
 export default function RootLayout({

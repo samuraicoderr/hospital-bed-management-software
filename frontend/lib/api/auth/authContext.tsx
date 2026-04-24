@@ -82,7 +82,7 @@ export function getOnboardingRoute(status: OnboardingStatusType): string {
     case OnboardingStatus.NEEDS_BASIC_INFORMATION:
       // Basic info is collected during registration itself,
       // so if we land here the user should register
-      return Routes.register;
+      return Routes.auth.register;
     case OnboardingStatus.NEEDS_EMAIL_VERIFICATION:
       return Routes.onboardingVerifyEmail;
     case OnboardingStatus.NEEDS_PHONE_VERIFICATION:

@@ -1,166 +1,159 @@
-export const baseURL = "";
+/**
+ * BedFlow Backend API Routes
+ * Maps to Django REST Framework endpoints
+ */
 
-/** Derive the WebSocket base URL from the REST API URL at runtime. */
-export function getWsBaseUrl(): string {
-  const apiUrl =
-    (typeof process !== "undefined" && process.env.NEXT_PUBLIC_API_URL) ||
-    "http://localhost:9000/api/v1";
-  try {
-    const parsed = new URL(apiUrl);
-    const scheme = parsed.protocol === "https:" ? "wss:" : "ws:";
-    return `${scheme}//${parsed.host}`;
-  } catch {
-    return "ws://localhost:9000";
-  }
-}
+const API_VERSION = '/api/v1';
 
 export const BackendRoutes = {
-  /* ----------------------------- AUTH ----------------------------- */
-  health: `${baseURL}/health/`,
-  login: `${baseURL}/auth/login/`,
-  refreshToken: `${baseURL}/auth/login/refresh_token/`,
-  register: `${baseURL}/auth/register/`,
-  joinWaitlist: `${baseURL}/auth/join_waitlist/`,
+  // Auth routes (from existing code)
+  auth: {
+    login: `${API_VERSION}/auth/login/`,
+    register: `${API_VERSION}/auth/register/`,
+    refresh: `${API_VERSION}/auth/login/refresh_token/`,
+    logout: `${API_VERSION}/auth/logout/`,
+    me: `${API_VERSION}/auth/me/`,
+    password_reset: `${API_VERSION}/password_reset/`,
+  },
 
-  /** @deprecated use `login` instead — old 1st/2nd factor split is replaced by MFA challenge flow */
-  loginFirstFactor: `${baseURL}/auth/login/`,
-  /** @deprecated use `mfaVerify` instead */
-  loginSecondFactor: `${baseURL}/auth/mfa/verify/`,
+  // Legacy aliases kept for compatibility with existing service modules.
+  loginFirstFactor: `${API_VERSION}/auth/login/`,
+  register: `${API_VERSION}/auth/register/`,
+  refreshToken: `${API_VERSION}/auth/login/refresh_token/`,
+  me: `${API_VERSION}/auth/me/`,
 
-  /* ----------------------------- PASSWORD RESET ----------------------------- */
-  passwordReset: `${baseURL}/reset/`,
-  passwordResetConfirm: `${baseURL}/reset/confirm/`,
-  passwordResetRenderPage: `${baseURL}/reset/confirm/render_reset_page/`,
-  passwordResetValidateToken: `${baseURL}/reset/validate_token/`,
+  getUsers: `${API_VERSION}/auth/users/`,
+  getUser: (id: string) => `${API_VERSION}/auth/users/${id}/`,
+  updatePassword: `${API_VERSION}/auth/change-password/`,
+  requestQrCode: `${API_VERSION}/auth/2fa/request-qr-code/`,
+  check2faOtp: `${API_VERSION}/auth/2fa/verify-otp/`,
 
-  /* ----------------------------- SECURITY / PASSWORD ----------------------------- */
-  updatePassword: `${baseURL}/security/password/`,
-  resetForgotPassword: `${baseURL}/security/password/reset_forgot_password/`,
-  sendForgotPasswordOtp: `${baseURL}/security/password/send_forgot_password_otp/`,
-  resetRecoveryCodes: `${baseURL}/security/2fa/reset_recovery_codes/`,
+  sendEmailOtp: `${API_VERSION}/auth/otp/send-email/`,
+  sendPhoneOtp: `${API_VERSION}/auth/otp/send-phone/`,
+  checkEmailOtp: `${API_VERSION}/auth/otp/check-email/`,
+  checkPhoneOtp: `${API_VERSION}/auth/otp/check-phone/`,
 
-  /* ----------------------------- MFA ----------------------------- */
-  mfaMethods: `${baseURL}/auth/mfa/methods/`,
-  mfaChallenge: `${baseURL}/auth/mfa/challenge/`,
-  mfaVerify: `${baseURL}/auth/mfa/verify/`,
-  mfaSetupTotp: `${baseURL}/auth/mfa/setup/totp/`,
-  mfaVerifyTotp: `${baseURL}/auth/mfa/verify/totp/`,
-  mfaSetupWebauthn: `${baseURL}/auth/mfa/setup/webauthn/`,
-  mfaVerifyWebauthn: `${baseURL}/auth/mfa/verify/webauthn/`,
-  mfaPushRegisterDevice: `${baseURL}/auth/mfa/push/register-device/`,
-  mfaRequestQrCode: `${baseURL}/auth/mfa/authapp/request_qr_code/`,
-  mfaQrImage: (token: string) =>
-    `${baseURL}/auth/mfa/authapp/qr-image/${token}/`,
+  getOnboardingToken: `${API_VERSION}/auth/onboarding/token/`,
+  onboardingSendEmailOtp: `${API_VERSION}/auth/onboarding/send-email-otp/`,
+  onboardingCheckEmailOtp: `${API_VERSION}/auth/onboarding/check-email-otp/`,
+  onboardingSetUsername: `${API_VERSION}/auth/onboarding/set-username/`,
+  onboardingSetProfilePicture: `${API_VERSION}/auth/onboarding/set-profile-picture/`,
+  checkUsername: `${API_VERSION}/auth/onboarding/check-username/`,
 
-  /** @deprecated use `mfaVerifyTotp` instead */
-  check2faOtp: `${baseURL}/auth/mfa/verify/totp/`,
-  /** @deprecated use `mfaRequestQrCode` instead */
-  requestQrCode: `${baseURL}/auth/mfa/authapp/request_qr_code/`,
-  /** @deprecated use `mfaQrImage` instead */
-  qrImageFor2FA: (token: string) =>
-    `${baseURL}/auth/mfa/authapp/qr-image/${token}/`,
-  /** @deprecated use `mfaChallenge` with method 'totp' instead */
-  send2faOtp: `${baseURL}/auth/mfa/challenge/`,
+  oauthAuthorizeCode: (provider: string) => `${API_VERSION}/auth/oauth/${provider}/authorize-code/`,
+  oauthLoginOrRegister: (provider: string) => `${API_VERSION}/auth/oauth/${provider}/login-or-register/`,
+  oauthGetProviders: `${API_VERSION}/auth/oauth/providers/`,
 
-  /* ----------------------------- ONBOARDING ----------------------------- */
-  getOnboardingToken: `${baseURL}/auth/onboarding/get_onboarding_token/`,
-  onboardingSendEmailOtp: `${baseURL}/auth/onboarding/email/send_email_verification_otp/`,
-  onboardingCheckEmailOtp: `${baseURL}/auth/onboarding/email/check_email_verification_otp/`,
-  onboardingSendPhoneOtp: `${baseURL}/auth/onboarding/phone/send_phone_verification_otp/`,
-  onboardingCheckPhoneOtp: `${baseURL}/auth/onboarding/phone/check_phone_verification_otp/`,
-  onboardingSetUsername: `${baseURL}/auth/onboarding/set_username/`,
-  onboardingSetProfilePicture: `${baseURL}/auth/onboarding/set_profile_picture/`,
+  notifications: `${API_VERSION}/notifications/`,
+  notificationsUnreadCount: `${API_VERSION}/notifications/unread-count/`,
+  notificationMarkRead: (id: string) => `${API_VERSION}/notifications/${id}/mark-read/`,
+  notificationsMarkAllRead: `${API_VERSION}/notifications/mark-all-read/`,
 
-  /** @deprecated use `onboardingCheckEmailOtp` instead */
-  checkEmailOtp: `${baseURL}/auth/onboarding/email/check_email_verification_otp/`,
-  /** @deprecated use `onboardingCheckPhoneOtp` instead */
-  checkPhoneOtp: `${baseURL}/auth/onboarding/phone/check_phone_verification_otp/`,
-  /** @deprecated use `onboardingSendEmailOtp` instead */
-  sendEmailOtp: `${baseURL}/auth/onboarding/email/send_email_verification_otp/`,
-  /** @deprecated use `onboardingSendPhoneOtp` instead */
-  sendPhoneOtp: `${baseURL}/auth/onboarding/phone/send_phone_verification_otp/`,
+  // Organizations
+  organizations: {
+    base: `${API_VERSION}/organizations/`,
+    hospitals: `${API_VERSION}/organizations/hospitals/`,
+    departments: `${API_VERSION}/organizations/departments/`,
+    wards: `${API_VERSION}/organizations/wards/`,
+    staff: `${API_VERSION}/organizations/staff/`,
+  },
 
-  /* ----------------------------- NOTIFICATIONS ----------------------------- */
-  notifications: `${baseURL}/notifications/`,
-  notification: (id: string) => `${baseURL}/notifications/${id}/`,
-  notificationMarkRead: (id: string) => `${baseURL}/notifications/${id}/read/`,
-  notificationsMarkAllRead: `${baseURL}/notifications/mark-all-read/`,
-  notificationsUnreadCount: `${baseURL}/notifications/unread-count/`,
-  notificationsWs: (token: string) =>
-    `${getWsBaseUrl()}/ws/notifications/?token=${encodeURIComponent(token)}`,
+  // Beds
+  beds: {
+    base: `${API_VERSION}/beds/beds/`,
+    detail: (id: string) => `${API_VERSION}/beds/beds/${id}/`,
+    updateStatus: (id: string) => `${API_VERSION}/beds/beds/${id}/update_status/`,
+    block: (id: string) => `${API_VERSION}/beds/beds/${id}/block/`,
+    unblock: (id: string) => `${API_VERSION}/beds/beds/${id}/unblock/`,
+    searchAvailable: `${API_VERSION}/beds/beds/search_available/`,
+    statistics: `${API_VERSION}/beds/beds/statistics/`,
+    history: (id: string) => `${API_VERSION}/beds/beds/${id}/history/`,
+    equipmentTags: `${API_VERSION}/beds/equipment-tags/`,
+  },
 
-  /* ----------------------------- USERS ----------------------------- */
-  me: `${baseURL}/users/me/`,
-  updateMe: `${baseURL}/users/update_me/`,
-  deleteMe: `${baseURL}/users/delete_me/`,
+  // Patients
+  patients: {
+    base: `${API_VERSION}/patients/patients/`,
+    detail: (id: string) => `${API_VERSION}/patients/patients/${id}/`,
+    requirements: (id: string) => `${API_VERSION}/patients/patients/${id}/requirements/`,
+    search: `${API_VERSION}/patients/patients/search/`,
+  },
 
-  /** @deprecated endpoint removed from backend */
-  getUsers: `${baseURL}/users/`,
-  /** @deprecated endpoint removed from backend */
-  getUser: (id: string) => `${baseURL}/users/${id}/`,
-  /** @deprecated endpoint removed from backend */
-  checkUsername: `${baseURL}/auth/check_username/`,
+  // Admissions
+  admissions: {
+    base: `${API_VERSION}/admissions/admission-requests/`,
+    detail: (id: string) => `${API_VERSION}/admissions/admission-requests/${id}/`,
+    assignBed: (id: string) => `${API_VERSION}/admissions/admission-requests/${id}/assign_bed/`,
+    admit: (id: string) => `${API_VERSION}/admissions/admission-requests/${id}/admit/`,
+    suggestBeds: (id: string) => `${API_VERSION}/admissions/admission-requests/${id}/suggest_beds/`,
+    active: `${API_VERSION}/admissions/admissions/`,
+    transfers: `${API_VERSION}/admissions/transfers/`,
+    transferDetail: (id: string) => `${API_VERSION}/admissions/transfers/${id}/`,
+    approveTransfer: (id: string) => `${API_VERSION}/admissions/transfers/${id}/approve/`,
+    completeTransfer: (id: string) => `${API_VERSION}/admissions/transfers/${id}/complete/`,
+  },
 
-  /* ----------------------------- OAUTH ----------------------------- */
-  oauthGetProviders: `${baseURL}/oauth/get_providers/`,
-  oauthLoginOrRegister: (provider: string) =>
-    `${baseURL}/oauth/${provider}/login-or-register/`,
-  oauthCallback: (provider: string) =>
-    `${baseURL}/oauth/${provider}/callback/`,
+  // Discharges
+  discharges: {
+    base: `${API_VERSION}/discharges/discharges/`,
+    detail: (id: string) => `${API_VERSION}/discharges/discharges/${id}/`,
+    approve: (id: string) => `${API_VERSION}/discharges/discharges/${id}/approve/`,
+    complete: (id: string) => `${API_VERSION}/discharges/discharges/${id}/complete/`,
+    pending: `${API_VERSION}/discharges/discharges/pending/`,
+  },
 
-  /** @deprecated use `oauthLoginOrRegister` instead */
-  oauthAuthorizeCode: (provider: string) =>
-    `${baseURL}/oauth/${provider}/login-or-register/`,
+  // Housekeeping
+  housekeeping: {
+    tasks: `${API_VERSION}/housekeeping/cleaning-tasks/`,
+    taskDetail: (id: string) => `${API_VERSION}/housekeeping/cleaning-tasks/${id}/`,
+    assign: (id: string) => `${API_VERSION}/housekeeping/cleaning-tasks/${id}/assign/`,
+    start: (id: string) => `${API_VERSION}/housekeeping/cleaning-tasks/${id}/start/`,
+    complete: (id: string) => `${API_VERSION}/housekeeping/cleaning-tasks/${id}/complete/`,
+    escalate: (id: string) => `${API_VERSION}/housekeeping/cleaning-tasks/${id}/escalate/`,
+    qualityCheck: (id: string) => `${API_VERSION}/housekeeping/cleaning-tasks/${id}/quality_check/`,
+    staff: `${API_VERSION}/housekeeping/staff/`,
+    staffDetail: (id: string) => `${API_VERSION}/housekeeping/staff/${id}/`,
+    dashboard: `${API_VERSION}/housekeeping/dashboard/`,
+  },
 
-  /* ----------------------------- ORGANIZATIONS ----------------------------- */
-  organizations: `${baseURL}/organizations/`,
-  organization: (id: string) => `${baseURL}/organizations/${id}/`,
+  // Dashboard
+  dashboard: {
+    operational: `${API_VERSION}/dashboard/operational/`,
+    occupancyTrend: `${API_VERSION}/dashboard/occupancy-trend/`,
+    departmentStats: `${API_VERSION}/dashboard/department-stats/`,
+  },
 
-  /* --- Audit Logs --- */
-  orgAuditLogs: (orgId: string) =>
-    `${baseURL}/organizations/${orgId}/audit-logs/`,
-  orgAuditLog: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/audit-logs/${id}/`,
+  // Alerts
+  alerts: {
+    base: `${API_VERSION}/alerts/alerts/`,
+    detail: (id: string) => `${API_VERSION}/alerts/alerts/${id}/`,
+    acknowledge: (id: string) => `${API_VERSION}/alerts/alerts/${id}/acknowledge/`,
+    markRead: `${API_VERSION}/alerts/alerts/mark_read/`,
+    stats: `${API_VERSION}/alerts/alerts/stats/`,
+    preferences: `${API_VERSION}/alerts/preferences/`,
+  },
 
-  /* --- Invitations --- */
-  orgInvitations: (orgId: string) =>
-    `${baseURL}/organizations/${orgId}/invitations/`,
-  orgInvitation: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/invitations/${id}/`,
-  orgInvitationAccept: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/invitations/${id}/accept/`,
-  orgInvitationDecline: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/invitations/${id}/decline/`,
-  orgInvitationResend: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/invitations/${id}/resend/`,
-  orgInvitationRevoke: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/invitations/${id}/revoke/`,
-  orgInvitationAcceptByToken: (orgId: string) =>
-    `${baseURL}/organizations/${orgId}/invitations/accept-by-token/`,
-  orgInvitationDeclineByToken: (orgId: string) =>
-    `${baseURL}/organizations/${orgId}/invitations/decline-by-token/`,
+  // Reports
+  reports: {
+    base: `${API_VERSION}/reports/reports/`,
+    detail: (id: string) => `${API_VERSION}/reports/reports/${id}/`,
+    generate: (id: string) => `${API_VERSION}/reports/reports/${id}/generate/`,
+    download: (id: string) => `${API_VERSION}/reports/reports/${id}/download/`,
+    schedules: `${API_VERSION}/reports/schedules/`,
+    types: `${API_VERSION}/reports/types/`,
+  },
 
-  /* --- Memberships --- */
-  orgMemberships: (orgId: string) =>
-    `${baseURL}/organizations/${orgId}/memberships/`,
-  orgMembership: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/memberships/${id}/`,
+  // Audit
+  audit: {
+    logs: `${API_VERSION}/audit/logs/`,
+    logDetail: (id: string) => `${API_VERSION}/audit/logs/${id}/`,
+    export: `${API_VERSION}/audit/logs/export/`,
+  },
 
-  /* --- Resources --- */
-  orgResources: (orgId: string) =>
-    `${baseURL}/organizations/${orgId}/resources/`,
-  orgResource: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/resources/${id}/`,
+  // Realtime WebSocket
+  realtime: {
+    websocket: (token: string) => `ws://localhost:9000/ws/bedflow/?token=${token}`,
+  },
+} as const;
 
-  /* --- Roles --- */
-  orgRoles: (orgId: string) =>
-    `${baseURL}/organizations/${orgId}/roles/`,
-  orgRole: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/roles/${id}/`,
-
-  /* --- Settings --- */
-  orgSettings: (orgId: string) =>
-    `${baseURL}/organizations/${orgId}/settings/`,
-  orgSetting: (orgId: string, id: string) =>
-    `${baseURL}/organizations/${orgId}/settings/${id}/`,
-};
+export default BackendRoutes;

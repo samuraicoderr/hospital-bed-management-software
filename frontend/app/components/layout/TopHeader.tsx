@@ -1,164 +1,118 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import {
+  Menu,
+  Bell,
+  Search,
+  User,
+  LogOut,
+  Settings,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Users, Bell, Menu } from "lucide-react";
-import appConfig from "@/lib/appconfig";
-import UserDropdown from "@/app/components/fragments/UserDropdown";
-import InvitationModal from "@/app/components/fragments/InvitationModal";
-import PlanUpgradeDropdown from "@/app/components/fragments/PlanUpgradeDropdown";
-import { useAuthStore, useAuthUser } from "@/lib/api/auth/authContext";
-import { authUtils } from "@/lib/api/auth/TokenManager";
-import { FrontendRoutes, Routes } from "@/lib/api/FrontendRoutes";
+import { useAuth } from "@/lib/api/auth/authContext";
+import FrontendRoutes from "@/lib/api/FrontendRoutes";
+import { alertService } from "@/lib/api/services";
 
 interface TopHeaderProps {
   onMenuToggle: () => void;
-  teamName?: string;
-  onSendInvites?: (emails: string[]) => Promise<void>;
-  inviteLink?: string;
+  hospitalName: string;
 }
 
-export default function TopHeader({
-  onMenuToggle,
-  teamName = "Your team",
-  onSendInvites,
-  inviteLink,
-}: TopHeaderProps) {
+export default function TopHeader({ onMenuToggle, hospitalName }: TopHeaderProps) {
   const router = useRouter();
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const user = useAuthUser();
-  const setUser = useAuthStore((state) => state.setUser);
+  const { logout, user } = useAuth();
+  const [unreadAlerts, setUnreadAlerts] = useState(0);
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
-  const userName =
-    user?.username ||
-    `${user?.first_name ?? ""} ${user?.last_name ?? ""}`.trim() ||
-    "you";
+  useEffect(() => {
+    const checkAlerts = async () => {
+      try {
+        const stats = await alertService.getStats();
+        setUnreadAlerts(stats.unread);
+      } catch (e) {
+        // Silently fail
+      }
+    };
+    checkAlerts();
+    const interval = setInterval(checkAlerts, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
 
-  const avatarUrl =
-    user?.profile_picture || user?.picture_url || appConfig.media.avatarExample;
-
-  const handleLogout = () => {
-    authUtils.logout();
-    setUser(null);
-    router.push(Routes.login);
-  };
-
-  const handleCopyInviteLink = async () => {
-    const fallbackLink = `${window.location.origin}${window.location.pathname}`;
-    const value = inviteLink ?? fallbackLink;
-
-    if (navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(value);
-      return;
-    }
-
-    const textarea = document.createElement("textarea");
-    textarea.value = value;
-    textarea.setAttribute("readonly", "");
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.select();
-    document.execCommand("copy");
-    document.body.removeChild(textarea);
-  };
-
-  const handleSendInvites = async (emails: string[]) => {
-    if (onSendInvites) {
-      await onSendInvites(emails);
-      return;
-    }
-
-    // Temporary fallback until backend invite endpoint is wired.
-    await new Promise((resolve) => setTimeout(resolve, 700));
-  };
-
-  const handleUpgrade = async () => {
-    // Placeholder for billing flow integration.
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    console.log("Upgrade flow triggered");
+  const handleLogout = async () => {
+    await logout();
+    router.push(FrontendRoutes.auth.login);
   };
 
   return (
-    <header className="h-14 sm:h-16 border-b border-gray-200 flex items-center justify-between px-4 sm:px-6 flex-shrink-0 bg-white">
+    <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
       {/* Left side */}
-      <div className="flex items-center gap-3">
-        {/* Hamburger — visible on mobile/tablet */}
+      <div className="flex items-center gap-4">
         <button
           onClick={onMenuToggle}
-          className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-gray-100 text-gray-500 transition-colors"
-          aria-label="Toggle sidebar"
+          className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 lg:hidden"
         >
-          <Menu size={20} />
+          <Menu className="w-5 h-5 text-gray-600" />
         </button>
-
-        <div className="flex items-center gap-2">
-          <img
-            src={appConfig.logos.green}
-            alt={appConfig.appName}
-            className="w-7 h-7 object-contain"
-          />
-          <span className="logo-text-font text-lg sm:text-xl tracking-tight text-gray-900 hidden sm:inline">
-            {appConfig.appName}
-          </span>
-          <PlanUpgradeDropdown
-            organizationName={teamName}
-            planName="Free plan"
-            adminName={userName}
-            adminAvatarUrl={avatarUrl}
-            onUpgrade={handleUpgrade}
-            trigger={
-              <button
-                type="button"
-                className="bg-[#E1F5EE] text-[#0F6E56] text-xs font-semibold px-2 py-1 rounded border border-[#0F6E56]/20 hover:bg-[#d3eee4] transition-colors"
-                aria-label="Open plan upgrade options"
-              >
-                Free
-              </button>
-            }
-          />
-        </div>
       </div>
 
       {/* Right side */}
-      <div className="flex items-center gap-2 sm:gap-4">
-        {/* Invite — hidden on small mobile */}
-        <button
-          onClick={() => setIsInviteOpen(true)}
-          className="flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
-          aria-haspopup="dialog"
-          aria-expanded={isInviteOpen}
-          aria-label="Invite members"
-        >
-          <Users size={18} />
-          <span className="hidden md:inline">Invite members</span>
+      <div className="flex items-center gap-2">
+        {/* Search button */}
+        <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500">
+          <Search className="w-5 h-5" />
         </button>
 
-        <div className="flex items-center gap-1 sm:gap-3 sm:pl-2 sm:border-l sm:border-gray-200">
+        {/* Alerts */}
+        <button
+          onClick={() => router.push(FrontendRoutes.alerts.root)}
+          className="relative w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500"
+        >
+          <Bell className="w-5 h-5" />
+          {unreadAlerts > 0 && (
+            <span className="absolute top-1.5 right-1.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+              {unreadAlerts > 9 ? "9+" : unreadAlerts}
+            </span>
+          )}
+        </button>
+
+        {/* User menu */}
+        <div className="relative">
           <button
-            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-colors relative"
-            aria-label="Notifications"
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100"
           >
-            <Bell size={20} />
-            {/* Notification dot */}
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
+            <div className="w-8 h-8 rounded-full bg-[#0F6E56] flex items-center justify-center text-white text-sm font-medium">
+              {user?.first_name?.[0] || user?.email?.[0] || "U"}
+            </div>
+            <span className="hidden sm:block text-sm font-medium text-gray-700">
+              {user?.first_name} {user?.last_name}
+            </span>
           </button>
 
-          <UserDropdown userName={userName} avatarUrl={avatarUrl} onLogout={handleLogout} onProfileClick={
-            ()=>{
-              router.push(FrontendRoutes.profile);
-            }
-          }/>
+          {showUserMenu && (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
+              <button
+                onClick={() => {
+                  setShowUserMenu(false);
+                  router.push(FrontendRoutes.settings.root);
+                }}
+                className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+              >
+                <Settings className="w-4 h-4" />
+                Settings
+              </button>
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
-
-      <InvitationModal
-        isOpen={isInviteOpen}
-        onClose={() => setIsInviteOpen(false)}
-        teamName={teamName}
-        onSendInvites={handleSendInvites}
-        onCopyLink={handleCopyInviteLink}
-      />
     </header>
   );
 }
