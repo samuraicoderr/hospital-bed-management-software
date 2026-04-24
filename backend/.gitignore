@@ -132,3 +132,4 @@ a.diff
 a.txt
 !src/lib
 src/media
+db.sqlite3*
