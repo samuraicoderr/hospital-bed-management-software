@@ -11,6 +11,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
   ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -203,80 +204,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
 
   // Track if auth has been initialized
   const [initialized, setInitialized] = useState(false);
-
-  /**
-   * Initialize authentication state
-   */
-  const initializeAuth = async () => {
-    setLoading(true);
-    tokenManager.syncAuthPresenceCookie();
-
-    try {
-      if (authUtils.isAuthenticated()) {
-        await fetchCurrentUser();
-      } else {
-        // Clear stale user data if token is invalid
-        if (user) {
-          setUser(null);
-        }
-      }
-    } catch (error) {
-      console.error("[Auth] Initialization failed:", error);
-      if (isApiErrorType(error) && error.status === 401) {
-        authUtils.logout();
-        setUser(null);
-        setPartialUser(null);
-        setOnboardingToken(null);
-        return;
-      }
-
-      if (isErrorWithCodeType(error)) {
-        if (
-          error?.code == "REQUEST_TIMEOUT" ||
-          error?.code == "NETWORK_ERROR"
-        ) {
-          alert(error.message);
-        }
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /**
-   * Initialize auth state on mount
-   */
-  useEffect(() => {
-    if (initialized) return;
-
-    let cancelled = false;
-    const run = async () => {
-      await initializeAuth();
-      if (!cancelled) {
-        setInitialized(true);
-      }
-    };
-
-    run();
-    return () => {
-      cancelled = true;
-    };
-  }, [initialized, initializeAuth]);
-
-  const doAuthCheck = async () => {
-    const next = buildLoginRedirectPath(
-      `${window.location.pathname}${window.location.search}`,
-      Routes.login
-    );
-    if (!authUtils.isAuthenticated() && !isLoading) {
-      router.replace(next);
-    }
-  };
+  const initGuardRef = useRef(false);
 
   /**
    * Fetch current user data
    */
-  const fetchCurrentUser = async (): Promise<void> => {
+  const fetchCurrentUser = useCallback(async (): Promise<void> => {
     try {
       const response = await api.get<UserType>(BackendRoutes.me);
       setUser(response.data);
@@ -295,6 +228,81 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     } catch (error) {
       console.error("[Auth] Failed to fetch user:", error);
       throw error;
+    }
+  }, [setUser, updatePartialUser, setOnboardingToken, setError]);
+
+  /**
+   * Initialize authentication state
+   */
+  const initializeAuth = useCallback(async () => {
+    setLoading(true);
+    tokenManager.syncAuthPresenceCookie();
+
+    try {
+      if (authUtils.isAuthenticated()) {
+        await fetchCurrentUser();
+      } else {
+        // Clear stale user data if token is invalid
+        const currentUser = useAuthStore.getState().user;
+        if (currentUser) {
+          setUser(null);
+        }
+      }
+    } catch (error) {
+      console.error("[Auth] Initialization failed:", error);
+      if (isApiErrorType(error) && error.status === 401) {
+        authUtils.logout();
+        setUser(null);
+        setPartialUser(null);
+        setOnboardingToken(null);
+        return;
+      }
+
+      if (isErrorWithCodeType(error)) {
+        if (
+          error?.code == "REQUEST_TIMEOUT" ||
+          error?.code == "NETWORK_ERROR"
+        ) {
+          // alert(error.message);
+          console.error(error.message);
+        }
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchCurrentUser, setUser, setPartialUser, setOnboardingToken, setLoading]);
+
+  /**
+   * Initialize auth state on mount
+   */
+  useEffect(() => {
+    if (initialized || initGuardRef.current) return;
+    initGuardRef.current = true;
+
+    let cancelled = false;
+    const run = async () => {
+      try {
+        await initializeAuth();
+      } finally {
+        if (!cancelled) {
+          setInitialized(true);
+        }
+      }
+    };
+
+    run();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialized, initializeAuth]);
+
+  const doAuthCheck = async () => {
+    const next = buildLoginRedirectPath(
+      `${window.location.pathname}${window.location.search}`,
+      Routes.login
+    );
+    if (!authUtils.isAuthenticated() && !isLoading) {
+      router.replace(next);
     }
   };
 

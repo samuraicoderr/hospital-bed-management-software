@@ -207,6 +207,9 @@ Practical implication:
 - Utility helpers: `lib/utils.ts`
 - UI config/constants: `lib/appconfig.ts`
 
+## 10) Design guide
+
+- full info on the app's design guide is at app_design_guide.md
 ---
 
 If you only remember one thing: build new behavior through the existing route constants + ApiClient + service layer + auth context patterns. Most regressions happen when bypassing those seams.

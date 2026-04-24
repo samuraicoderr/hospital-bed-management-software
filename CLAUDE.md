@@ -331,6 +331,7 @@ Practical implication:
 - Utility helpers: `frontend/lib/utils.ts`
 - UI config/constants: `frontend/lib/appconfig.ts`
 
+
 ---
 
 If you only remember one thing: build new behavior through the existing route constants + ApiClient + service layer + auth context patterns. Most regressions happen when bypassing those seams.
