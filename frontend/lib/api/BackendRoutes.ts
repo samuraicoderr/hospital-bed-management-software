@@ -24,15 +24,41 @@ export const BackendRoutes = {
     sendForgotPasswordOtp: `${API_VERSION}/security/password/send_forgot_password_otp/`,
     resetForgotPassword: `${API_VERSION}/security/password/reset_forgot_password/`,
 
-    requestQrCode: `${API_VERSION}/auth/request_qr_code/`,
-    check2faOtp: `${API_VERSION}/auth/check_2fa_otp/`,
-    sendEmailOtp: `${API_VERSION}/auth/send_email_verification_otp/`,
-    sendPhoneOtp: `${API_VERSION}/auth/send_phone_verification_otp/`,
-    checkEmailOtp: `${API_VERSION}/auth/check_email_verification_otp/`,
-    checkPhoneOtp: `${API_VERSION}/auth/check_phone_verification_otp/`,
-    getOnboardingToken: `${API_VERSION}/auth/get_onboarding_token/`,
-    setUsername: `${API_VERSION}/auth/set_username/`,
-    setProfilePicture: `${API_VERSION}/auth/set_profile_picture/`,
+    // MFA routes
+    mfa: {
+      qrImage: (token: string) => `${API_VERSION}/auth/mfa/authapp/qr-image/${token}/`,
+      requestQrCode: `${API_VERSION}/auth/mfa/authapp/request_qr_code/`,
+      challenge: `${API_VERSION}/auth/mfa/challenge/`,
+      methods: `${API_VERSION}/auth/mfa/methods/`,
+      pushRegisterDevice: `${API_VERSION}/auth/mfa/push/register-device/`,
+      setupTotp: `${API_VERSION}/auth/mfa/setup/totp/`,
+      setupWebauthn: `${API_VERSION}/auth/mfa/setup/webauthn/`,
+      verify: `${API_VERSION}/auth/mfa/verify/`,
+      verifyTotp: `${API_VERSION}/auth/mfa/verify/totp/`,
+      verifyWebauthn: `${API_VERSION}/auth/mfa/verify/webauthn/`,
+    },
+
+    // Onboarding routes
+    onboarding: {
+      sendEmailOtp: `${API_VERSION}/auth/onboarding/email/send_email_verification_otp/`,
+      checkEmailOtp: `${API_VERSION}/auth/onboarding/email/check_email_verification_otp/`,
+      sendPhoneOtp: `${API_VERSION}/auth/onboarding/phone/send_phone_verification_otp/`,
+      checkPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
+      getOnboardingToken: `${API_VERSION}/auth/onboarding/get_onboarding_token/`,
+      setUsername: `${API_VERSION}/auth/onboarding/set_username/`,
+      setProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
+    },
+
+    // Legacy flat aliases for backward compatibility
+    requestQrCode: `${API_VERSION}/auth/mfa/authapp/request_qr_code/`,
+    check2faOtp: `${API_VERSION}/auth/mfa/verify/`,
+    sendEmailOtp: `${API_VERSION}/auth/onboarding/email/send_email_verification_otp/`,
+    sendPhoneOtp: `${API_VERSION}/auth/onboarding/phone/send_phone_verification_otp/`,
+    checkEmailOtp: `${API_VERSION}/auth/onboarding/email/check_email_verification_otp/`,
+    checkPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
+    getOnboardingToken: `${API_VERSION}/auth/onboarding/get_onboarding_token/`,
+    setUsername: `${API_VERSION}/auth/onboarding/set_username/`,
+    setProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
   },
 
   /* =========================
@@ -101,8 +127,6 @@ export const BackendRoutes = {
       `${API_VERSION}/patients/${id}/admission_history/`,
     clinicalRequirements: (id: string) =>
       `${API_VERSION}/patients/${id}/clinical_requirements/`,
-
-    search: `${API_VERSION}/patients/search/`,
   },
 
   clinicalRequirements: {
@@ -130,8 +154,6 @@ export const BackendRoutes = {
     approveTransfer: (id: string) => `${API_VERSION}/transfers/${id}/approve/`,
     completeTransfer: (id: string) =>
       `${API_VERSION}/transfers/${id}/complete/`,
-
-    active: `${API_VERSION}/admissions/active/`,
   },
 
   /* =========================
@@ -160,10 +182,6 @@ export const BackendRoutes = {
     staff: `${API_VERSION}/housekeeping-staff/`,
     staffDetail: (id: string) =>
       `${API_VERSION}/housekeeping-staff/${id}/`,
-
-    escalate: (id: string) => `${API_VERSION}/cleaning-tasks/${id}/escalate/`,
-    qualityCheck: (id: string) => `${API_VERSION}/cleaning-tasks/${id}/quality-check/`,
-    dashboard: `${API_VERSION}/cleaning-tasks/dashboard/`,
   },
 
   /* =========================
@@ -176,9 +194,6 @@ export const BackendRoutes = {
       `${API_VERSION}/alerts/${id}/acknowledge/`,
     resolve: (id: string) => `${API_VERSION}/alerts/${id}/resolve/`,
     myAlerts: `${API_VERSION}/alerts/my_alerts/`,
-
-    markRead: `${API_VERSION}/alerts/mark-read/`,
-    stats: `${API_VERSION}/alerts/stats/`,
 
     configurations: `${API_VERSION}/alert-configurations/`,
     configurationDetail: (id: string) =>
@@ -195,7 +210,6 @@ export const BackendRoutes = {
   dashboard: {
     occupancyTrend: `${API_VERSION}/dashboard/occupancy_trend/`,
     operational: `${API_VERSION}/dashboard/operational/`,
-    departmentStats: `${API_VERSION}/dashboard/department-stats/`,
   },
 
   /* =========================
@@ -220,6 +234,7 @@ export const BackendRoutes = {
   passwordReset: {
     request: `${API_VERSION}/reset/`,
     confirm: `${API_VERSION}/reset/confirm/`,
+    renderResetPage: `${API_VERSION}/reset/confirm/render_reset_page/`,
     validateToken: `${API_VERSION}/reset/validate_token/`,
   },
 
@@ -249,17 +264,24 @@ export const BackendRoutes = {
   getUsers: `${API_VERSION}/users/`,
   getUser: (id: string) => `${API_VERSION}/users/${id}/`,
   updatePassword: `${API_VERSION}/security/password/`,
-  requestQrCode: `${API_VERSION}/auth/request_qr_code/`,
-  check2faOtp: `${API_VERSION}/auth/check_2fa_otp/`,
-  sendEmailOtp: `${API_VERSION}/auth/send_email_verification_otp/`,
-  sendPhoneOtp: `${API_VERSION}/auth/send_phone_verification_otp/`,
-  checkEmailOtp: `${API_VERSION}/auth/check_email_verification_otp/`,
-  checkPhoneOtp: `${API_VERSION}/auth/check_phone_verification_otp/`,
-  getOnboardingToken: `${API_VERSION}/auth/get_onboarding_token/`,
-  onboardingSendEmailOtp: `${API_VERSION}/auth/send_email_verification_otp/`,
-  onboardingCheckEmailOtp: `${API_VERSION}/auth/check_email_verification_otp/`,
-  onboardingSetUsername: `${API_VERSION}/auth/set_username/`,
-  onboardingSetProfilePicture: `${API_VERSION}/auth/set_profile_picture/`,
+  resetRecoveryCodes: `${API_VERSION}/security/2fa/reset_recovery_codes/`,
+
+  // MFA flat aliases
+  requestQrCode: `${API_VERSION}/auth/mfa/authapp/request_qr_code/`,
+  check2faOtp: `${API_VERSION}/auth/mfa/verify/`,
+
+  // Onboarding flat aliases
+  sendEmailOtp: `${API_VERSION}/auth/onboarding/email/send_email_verification_otp/`,
+  sendPhoneOtp: `${API_VERSION}/auth/onboarding/phone/send_phone_verification_otp/`,
+  checkEmailOtp: `${API_VERSION}/auth/onboarding/email/check_email_verification_otp/`,
+  checkPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
+  getOnboardingToken: `${API_VERSION}/auth/onboarding/get_onboarding_token/`,
+  onboardingSendEmailOtp: `${API_VERSION}/auth/onboarding/email/send_email_verification_otp/`,
+  onboardingCheckEmailOtp: `${API_VERSION}/auth/onboarding/email/check_email_verification_otp/`,
+  onboardingSendPhoneOtp: `${API_VERSION}/auth/onboarding/phone/send_phone_verification_otp/`,
+  onboardingCheckPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
+  onboardingSetUsername: `${API_VERSION}/auth/onboarding/set_username/`,
+  onboardingSetProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
 
   oauthAuthorizeCode: (provider: string) => `${API_VERSION}/oauth/${provider}/login-or-register/`,
   oauthLoginOrRegister: (provider: string) => `${API_VERSION}/oauth/${provider}/login-or-register/`,
