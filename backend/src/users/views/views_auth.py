@@ -738,7 +738,9 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
             hospital_data=hospital_data
         )
 
-        user.advance_onboarding(from_step=User.OnboardingStatus.NEEDS_HOSPITAL)
+        with transaction.atomic():
+            user = User.objects.select_for_update().get(pk=user.pk)
+            user.advance_onboarding(from_step=User.OnboardingStatus.NEEDS_HOSPITAL)
 
         return Response(
             CreateUserSerializer(user, context={"request": request}).data,

@@ -223,17 +223,18 @@ export interface CheckUsernameResponse {
 
 export interface CreateHospitalRequest {
   onboarding_token: string;
-  name: string;
-  code: string;
+  invitation_token?: string;
+  name?: string;
+  code?: string;
   hospital_type?: string;
   license_number?: string;
   tax_id?: string;
-  address: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  phone: string;
-  email: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postal_code?: string;
+  phone?: string;
+  email?: string;
   website?: string;
   latitude?: number | null;
   longitude?: number | null;

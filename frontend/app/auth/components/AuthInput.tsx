@@ -8,6 +8,7 @@ interface AuthInputProps {
   type?: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
   placeholder?: string;
   error?: string;
   disabled?: boolean;
@@ -28,6 +29,7 @@ export default function AuthInput({
   autoComplete,
   rightElement,
   required,
+  className,
 }: AuthInputProps) {
   return (
     <div className="auth-input-group">
@@ -41,7 +43,7 @@ export default function AuthInput({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`auth-input ${error ? "auth-input--error" : ""}`}
+          className={`auth-input ${className || ""} ${error ? "auth-input--error" : ""}`}
           disabled={disabled}
           autoComplete={autoComplete}
           required={required}

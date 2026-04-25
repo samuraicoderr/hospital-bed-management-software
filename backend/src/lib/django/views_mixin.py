@@ -68,6 +68,7 @@ class ViewSetHelperMixin(PaginationMixin):
     _DefaultPermissionClass = IsVerifiedUser
     _DefaultSerializerClass = EmptySerializer
     _DefaultFiltersetClass = EmptyFilterSet
+    _do_not_override_filters = False
 
     def get_serializer_class(self):
         """Return the serializer class to use for the request."""
@@ -88,6 +89,8 @@ class ViewSetHelperMixin(PaginationMixin):
 
     def get_filterset_class(self):
         """Return the filterset class to use for the request."""
+        if self._do_not_override_filters:
+            return super().get_filterset_class()
         if self._use_filterset_class:
             return self.filterset_class or self.filters.get(self.action, self.filters.get("default", self._DefaultFiltersetClass))
         return self.filters.get(self.action, self.filters.get("default", self._DefaultFiltersetClass))

@@ -91,6 +91,8 @@ export const BackendRoutes = {
     hospitalBuildings: (id: string) => `${API_VERSION}/hospitals/${id}/buildings/`,
     hospitalDepartments: (id: string) => `${API_VERSION}/hospitals/${id}/departments/`,
     hospitalStaff: (id: string) => `${API_VERSION}/hospitals/${id}/staff/`,
+    hospitalInviteStaff: (id: string) => `${API_VERSION}/hospitals/${id}/invite_staff/`,
+    hospitalPendingInvites: (id: string) => `${API_VERSION}/hospitals/${id}/pending_invites/`,
 
     buildings: `${API_VERSION}/buildings/`,
     buildingDetail: (id: string) => `${API_VERSION}/buildings/${id}/`,
@@ -106,6 +108,9 @@ export const BackendRoutes = {
 
     hospitalStaffList: `${API_VERSION}/hospital-staff/`,
     hospitalStaffListDetail: (id: string) => `${API_VERSION}/hospital-staff/${id}/`,
+    hospitalStaffAcceptInvitation: `${API_VERSION}/hospital-staff/accept_invitation/`,
+    hospitalStaffInvitations: `${API_VERSION}/hospital-staff-invitations/`,
+    hospitalStaffInvitationDetail: (id: string) => `${API_VERSION}/hospital-staff-invitations/${id}/`,
   },
 
   /* =========================

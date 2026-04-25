@@ -48,8 +48,8 @@ export default function AuthLayout({
       </div>
 
       {/* Form panel */}
-      <div className="auth-form-panel">
-        <div className="auth-form-container">
+      <div className="auth-form-panel h-screen overflow-y-auto">
+        <div className="auth-form-container m-auto py-4">
           {/* Mobile logo — hidden on desktop */}
           <Link href="/" className="auth-mobile-logo-link cursor-pointer">
             <div className="auth-mobile-logo">

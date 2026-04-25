@@ -7,6 +7,7 @@ from .views import (
     DepartmentViewSet,
     WardViewSet,
     HospitalStaffViewSet,
+    HospitalStaffInvitationViewSet,
 )
 
 organizations_router = SimpleRouter()
@@ -16,3 +17,4 @@ organizations_router.register(r"buildings", BuildingViewSet, basename="building"
 organizations_router.register(r"departments", DepartmentViewSet, basename="department")
 organizations_router.register(r"wards", WardViewSet, basename="ward")
 organizations_router.register(r"hospital-staff", HospitalStaffViewSet, basename="hospital-staff")
+organizations_router.register(r"hospital-staff-invitations", HospitalStaffInvitationViewSet, basename="hospital-staff-invitations")

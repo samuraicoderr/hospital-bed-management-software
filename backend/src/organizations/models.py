@@ -5,6 +5,7 @@ Organization models for BedFlow - Multi-hospital support per section 4.7
 from django.conf import settings
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils import timezone
 
 from src.common.constants import GenderRestriction
 from src.lib.utils.uuid7 import uuid7
@@ -523,3 +524,80 @@ class HospitalStaff(models.Model):
             return True
 
         return permission in role_perm_values
+
+
+class HospitalStaffInvitationStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    ACCEPTED = "accepted", "Accepted"
+    REVOKED = "revoked", "Revoked"
+    EXPIRED = "expired", "Expired"
+
+
+class HospitalStaffInvitation(models.Model):
+    """
+    Invitation lifecycle for adding staff members to a hospital.
+    Supports both already-onboarded users and users still completing onboarding.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+
+    hospital = models.ForeignKey(
+        Hospital,
+        on_delete=models.CASCADE,
+        related_name="staff_invitations",
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="staff_invitations",
+    )
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="sent_hospital_staff_invitations",
+    )
+    accepted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="accepted_hospital_staff_invitations",
+    )
+
+    email = models.EmailField()
+    role = models.CharField(
+        max_length=50,
+        choices=HospitalStaffRole.choices,
+    )
+    employee_id = models.CharField(max_length=100, blank=True)
+    message = models.CharField(max_length=255, blank=True)
+
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    expires_at = models.DateTimeField()
+    accepted_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=HospitalStaffInvitationStatus.choices,
+        default=HospitalStaffInvitationStatus.PENDING,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["hospital", "status"]),
+            models.Index(fields=["email", "status"]),
+            models.Index(fields=["expires_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.email} invited to {self.hospital.code} ({self.role})"
+
+    def is_expired(self) -> bool:
+        return timezone.now() > self.expires_at
