@@ -26,6 +26,7 @@ from src.common.serializers import EmptySerializer
 from src.lib.django.views_mixin import ViewSetHelperMixin
 from src.lib.utils.uuid7 import uuid7
 from src.notifications.Notifier import NotifyUser
+from src.organizations.services import HospitalService
 from src.users.models import User, RecoveryCode, WaitList
 from src.users.permissions import IsVerifiedUser
 from src.users.serializers import (
@@ -160,8 +161,10 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
         "get_onboarding_token": GetOboardingTokenSerializer,
         "exchange_onboarding_tokens_for_login_tokens": Onboarding.UseOnboardingTokenSerializer,
         "set_user_basic_info": Onboarding.ChangeBasicInfoSerializer,
+        "set_password": Onboarding.ChangePasswordSerializer,
         "set_username": Onboarding.ChangeUserNameSerializer,
         "set_profile_picture": Onboarding.ChangeProfilePictureSerializer,
+        "create_or_join_first_hospital": Onboarding.CreateHospitalSerializer,  # reusing the same serializer since it only has the onboarding token and the hospital name is optional
         "join_waitlist": WaitListSerializer,      # was missing
         "check_username": CheckUsernameSerializer,
         "qr_image_for_2fa": EmptySerializer,      # GET with no body
@@ -196,7 +199,9 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
         "set_username": (AllowAny,),
         "set_user_basic_info": (AllowAny,),
         "set_profile_picture": (AllowAny,),
+        "create_or_join_first_hospital": (AllowAny,),
         "check_username": (AllowAny,),
+        "set_password": (AllowAny,),
     }
 
     # ── Waitlist ──────────────────────────────
@@ -293,7 +298,12 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
             user.set_password(raw_password)
             user.save()
             # Advance from NEEDS_BASIC_INFORMATION → NEEDS_EMAIL_VERIFICATION
-            user.advance_onboarding()
+            # user.advance_onboarding(
+            #     from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION
+            # )
+            user.advance_onboarding(
+                from_step=User.OnboardingStatus.NEEDS_PASSWORD,  # skip the password step since we already have the password at registration
+            )
 
         try:
             NotifyUser(user).send_welcome_to_user()
@@ -577,13 +587,55 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
                 # skip email verification step if email is already verified (e.g. from OAuth signup)s
                 user.advance_onboarding(from_step=User.OnboardingStatus.NEEDS_EMAIL_VERIFICATION)
             else:
-                user.advance_onboarding(from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION)
+                user.advance_onboarding(
+                    from_step=User.OnboardingStatus.NEEDS_PASSWORD  # skip the password step since we've just done that -> NEEDS_EMAIL_VERIFICATION
+                )
 
         return Response(
             CreateUserSerializer(user, context={"request": request}).data,
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=False, methods=["post"], url_path="onboarding/set_password")
+    def set_password(self, request):
+        """Set the user's password during onboarding.
+        
+        This is needed especially when we don't want to use `set_user_basic_info` because we already have the users info and only need the password since that endpoint collects both
+        ```json
+        {
+            "onboarding_token": "...",
+            "password": "..."
+        }
+        ```
+        """
+
+        serializer = self.get_serializer_class()(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = _resolve_user_from_onboarding_token(
+            serializer.validated_data["onboarding_token"]
+        )
+
+        if user.is_onboarding_completed():
+            raise ValidationError({"error": "user onboarding is already completed"})
+        if user.is_future_step(User.OnboardingStatus.NEEDS_PASSWORD):
+            raise ValidationError({"error": "user has not yet reached the password step"})
+
+        with transaction.atomic():
+            user = User.objects.select_for_update().get(pk=user.pk)
+            user.set_password(serializer.validated_data["password"])
+            user.save(
+                update_fields=["password"]
+            )
+            user.advance_onboarding(
+                from_step=User.OnboardingStatus.NEEDS_EMAIL_VERIFICATION  # -> NEEDS_PROFILE_USERNAME
+            )
+
+        return Response(
+            CreateUserSerializer(user, context={"request": request}).data,
+            status=status.HTTP_200_OK,
+        )
+    
     @action(detail=False, methods=["post"], url_path="onboarding/set_username")
     def set_username(self, request):
         """
@@ -660,6 +712,39 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
             CreateUserSerializer(user, context={"request": request}).data,
             status=status.HTTP_200_OK,
         )
+    
+
+    @action(detail=False, methods=["post"], url_path="onboarding/create_or_join_first_hospital")
+    def create_or_join_first_hospital(self, request):
+        """
+        Create or join the user's first hospital during onboarding.
+        Requires a valid onboarding token. Advances onboarding on success.
+        """
+        serializer = self.get_serializer_class()(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = _resolve_user_from_onboarding_token(
+            serializer.validated_data["onboarding_token"]
+        )
+
+        if user.is_onboarding_completed():
+            raise ValidationError({"error": "user onboarding is already completed"})
+        if user.is_future_step(User.OnboardingStatus.NEEDS_HOSPITAL):
+            raise ValidationError({"error": "user has not yet reached the hospital affiliation step"})
+
+        hospital_data = serializer.validated_data
+        organization, hospital, staff = HospitalService.create_or_join_first_hospital(
+            user, 
+            hospital_data=hospital_data
+        )
+
+        user.advance_onboarding(from_step=User.OnboardingStatus.NEEDS_HOSPITAL)
+
+        return Response(
+            CreateUserSerializer(user, context={"request": request}).data,
+            status=status.HTTP_200_OK,
+        )
+
 
     # ── Onboarding Email OTP ─────────────────────────────
 

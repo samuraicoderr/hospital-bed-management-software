@@ -9,8 +9,12 @@ import type {
   CheckUsernameResponse,
   SetBasicInfoRequest,
   SetBasicInfoResponse,
+  SetPasswordRequest,
+  SetPasswordResponse,
   ExchangeOnboardingTokensRequest,
   ExchangeOnboardingTokensResponse,
+  CreateHospitalRequest,
+  CreateHospitalResponse,
 } from "../types/auth";
 
 /* -------------------- TYPES -------------------- */
@@ -132,10 +136,30 @@ export class OnboardingService {
     return res.data;
   }
 
+  /** Set password during onboarding */
+  static async setPassword(data: SetPasswordRequest): Promise<SetPasswordResponse> {
+    const res = await apiClient.post<SetPasswordResponse>(
+      BackendRoutes.onboardingSetPassword,
+      data,
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
   /** Exchange onboarding token for JWT auth tokens after completing onboarding */
   static async exchangeOnboardingTokens(data: ExchangeOnboardingTokensRequest): Promise<ExchangeOnboardingTokensResponse> {
     const res = await apiClient.post<ExchangeOnboardingTokensResponse>(
       BackendRoutes.onboardingExchangeTokens,
+      data,
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
+  /** Create or join first hospital during onboarding */
+  static async createOrJoinFirstHospital(data: CreateHospitalRequest): Promise<CreateHospitalResponse> {
+    const res = await apiClient.post<CreateHospitalResponse>(
+      BackendRoutes.onboardingCreateOrJoinFirstHospital,
       data,
       { requiresAuth: false }
     );

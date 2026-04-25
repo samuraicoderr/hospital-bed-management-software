@@ -46,8 +46,10 @@ export const BackendRoutes = {
       checkPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
       getOnboardingToken: `${API_VERSION}/auth/onboarding/get_onboarding_token/`,
       setUserBasicInfo: `${API_VERSION}/auth/onboarding/set_user_basic_info/`,
+      setPassword: `${API_VERSION}/auth/onboarding/set_password/`,
       setUsername: `${API_VERSION}/auth/onboarding/set_username/`,
       setProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
+      createOrJoinFirstHospital: `${API_VERSION}/auth/onboarding/create_or_join_first_hospital/`,
       exchangeTokens: `${API_VERSION}/auth/onboarding/exchange_onboarding_tokens_for_login_tokens/`,
     },
 
@@ -60,8 +62,10 @@ export const BackendRoutes = {
     checkPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
     getOnboardingToken: `${API_VERSION}/auth/onboarding/get_onboarding_token/`,
     setBasicInfo: `${API_VERSION}/auth/onboarding/set_user_basic_info/`,
+    setPassword: `${API_VERSION}/auth/onboarding/set_password/`,
     setUsername: `${API_VERSION}/auth/onboarding/set_username/`,
     setProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
+    createOrJoinFirstHospital: `${API_VERSION}/auth/onboarding/create_or_join_first_hospital/`,
     exchangeOnboardingTokens: `${API_VERSION}/auth/onboarding/exchange_onboarding_tokens_for_login_tokens/`,
   },
 
@@ -285,8 +289,10 @@ export const BackendRoutes = {
   onboardingSendPhoneOtp: `${API_VERSION}/auth/onboarding/phone/send_phone_verification_otp/`,
   onboardingCheckPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
   onboardingSetUserBasicInfo: `${API_VERSION}/auth/onboarding/set_user_basic_info/`,
+  onboardingSetPassword: `${API_VERSION}/auth/onboarding/set_password/`,
   onboardingSetUsername: `${API_VERSION}/auth/onboarding/set_username/`,
   onboardingSetProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
+  onboardingCreateOrJoinFirstHospital: `${API_VERSION}/auth/onboarding/create_or_join_first_hospital/`,
   onboardingExchangeTokens: `${API_VERSION}/auth/onboarding/exchange_onboarding_tokens_for_login_tokens/`,
 
   oauthAuthorizeCode: (provider: string) => `${API_VERSION}/oauth/${provider}/login-or-register/`,

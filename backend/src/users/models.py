@@ -85,10 +85,12 @@ def password_reset_token_created(sender, instance, reset_password_token, *args, 
 
 class OnboardingStatus(models.TextChoices):
     NEEDS_BASIC_INFORMATION = "needs_basic_information", "Needs Basic Information"
+    NEEDS_PASSWORD = "needs_password", "Needs Password"
     NEEDS_EMAIL_VERIFICATION = "needs_email_verification", "Needs Email Verification"
     NEEDS_PHONE_VERIFICATION = "needs_phone_verification", "Needs Phone Verification"
     NEEDS_PROFILE_USERNAME = "needs_profile_username", "Needs Profile Username"
     NEEDS_PROFILE_PICTURE = "needs_profile_picture", "Needs Profile Picture"
+    NEEDS_HOSPITAL = "needs_hospital", "Needs Hospital Affiliation"
     COMPLETED = "completed", "Completed"
 
 
@@ -127,9 +129,11 @@ class OnboardingMixin:
 
     ONBOARDING_FLOW = [
         OnboardingStatus.NEEDS_BASIC_INFORMATION,
+        OnboardingStatus.NEEDS_PASSWORD,
         OnboardingStatus.NEEDS_EMAIL_VERIFICATION,
         OnboardingStatus.NEEDS_PROFILE_USERNAME,
         OnboardingStatus.NEEDS_PROFILE_PICTURE,
+        OnboardingStatus.NEEDS_HOSPITAL,
         OnboardingStatus.COMPLETED,
     ]
 
@@ -138,12 +142,13 @@ class OnboardingMixin:
     def get_onboarding_flow(self) -> list:
         return self.ONBOARDING_FLOW
 
-    def get_next_onboarding_step(self):
+    def get_next_onboarding_step(self, from_step=None):
         flow = self.get_onboarding_flow()
         if not flow or self.onboarding_status == OnboardingStatus.COMPLETED:
             return None
+        from_step = from_step or self.onboarding_status
         try:
-            current_index = flow.index(self.onboarding_status)
+            current_index = flow.index(from_step)
         except ValueError:
             return flow[0]
         if current_index + 1 < len(flow):
@@ -181,7 +186,7 @@ class OnboardingMixin:
                 user.advance_onboarding(from_step=...)
         """
         flow = self.get_onboarding_flow()
-        next_step = self.get_next_onboarding_step()
+        next_step = self.get_next_onboarding_step(from_step=from_step)
 
         if strict and from_step != self.onboarding_status:
             raise ValidationError("This onboarding step is either in the past or future.")
@@ -198,10 +203,11 @@ class OnboardingMixin:
 
             if from_step_index < current_index:
                 # this means we have already advanced beyond this step, advancing from `from_step` might take us backwards
+                # This happends if user redoes an already completed step.
                 next_step = self.onboarding_status
-            elif from_step_index > current_index:
-                # This is unlikely but it does mean that current_step has not been fully completed
-                next_step = self.onboarding_status
+            # elif from_step_index > current_index:
+            #     # This is unlikely but it does mean that current_step has not been fully completed
+            #     next_step = self.onboarding_status
 
         if next_step and next_step != self.onboarding_status:
             self.onboarding_status = next_step

@@ -15,8 +15,6 @@ export default function BasicInfoPage() {
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,26 +43,15 @@ export default function BasicInfoPage() {
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
     setLoading(true);
     try {
       const result = await OnboardingService.setBasicInfo({
         onboarding_token: token,
         first_name: firstName.trim(),
         last_name: lastName.trim(),
-        password,
       });
       updatePartialUser({ onboarding_status: result.onboarding_status });
-      router.replace(Routes.onboardingUsername);
+      router.replace(Routes.onboardingPassword);
     } catch (err) {
       const details = interpretServerError(err);
       setError(details[0] || "Could not save your information. Please try again.");
@@ -98,33 +85,11 @@ export default function BasicInfoPage() {
           disabled={loading}
         />
 
-        <AuthInput
-          id="password"
-          label="Password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Create a password"
-          required
-          disabled={loading}
-        />
-
-        <AuthInput
-          id="confirm-password"
-          label="Confirm password"
-          type="password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Confirm your password"
-          required
-          disabled={loading}
-        />
-
         <div style={{ marginTop: "1.25rem" }}>
           <SubmitButton
             label="Continue"
             loading={loading}
-            disabled={loading || !firstName || !lastName || !password || !confirmPassword}
+            disabled={loading || !firstName || !lastName}
           />
         </div>
       </form>

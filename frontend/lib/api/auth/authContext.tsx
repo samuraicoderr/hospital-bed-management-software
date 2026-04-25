@@ -77,11 +77,13 @@ export function isApiErrorType(error: unknown): error is ApiErrorType {
 
 const ONBOARDING_ROUTE_MAP: Record<OnboardingStatusType, string> = {
   [OnboardingStatus.NEEDS_BASIC_INFORMATION]: Routes.onboardingBasicInfo,
+  [OnboardingStatus.NEEDS_PASSWORD]: Routes.onboardingPassword,
   [OnboardingStatus.NEEDS_EMAIL_VERIFICATION]: Routes.onboardingVerifyEmail,
   // Phone verification is currently skipped i frontend flow.
   [OnboardingStatus.NEEDS_PHONE_VERIFICATION]: Routes.onboardingUsername,
   [OnboardingStatus.NEEDS_PROFILE_USERNAME]: Routes.onboardingUsername,
   [OnboardingStatus.NEEDS_PROFILE_PICTURE]: Routes.onboardingProfilePicture,
+  [OnboardingStatus.NEEDS_HOSPITAL]: Routes.onboardingHospital,
   [OnboardingStatus.COMPLETED]: Routes.home,
 };
 

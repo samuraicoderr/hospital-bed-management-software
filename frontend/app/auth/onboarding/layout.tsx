@@ -23,6 +23,12 @@ const STEP_CONFIG: StepMeta[] = [
     subtitle: "We just need a few basic details to get started.",
   },
   {
+    route: Routes.onboardingPassword,
+    statusKey: "needs_password",
+    title: "Create a password",
+    subtitle: "Choose a secure password for your account.",
+  },
+  {
     route: Routes.onboardingVerifyEmail,
     statusKey: "needs_email_verification",
     title: "Verify your email",
@@ -39,6 +45,12 @@ const STEP_CONFIG: StepMeta[] = [
     statusKey: "needs_profile_picture",
     title: "Add a profile picture",
     subtitle: "A photo helps your profile feel more personal.",
+  },
+  {
+    route: Routes.onboardingHospital,
+    statusKey: "needs_hospital",
+    title: "Set up your hospital",
+    subtitle: "Configure your hospital information to get started.",
   },
   {
     route: Routes.onboardingComplete,

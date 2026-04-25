@@ -56,7 +56,7 @@ export default function ProfilePicturePage() {
       updatePartialUser({
         onboarding_status: result.onboarding_status,
       });
-      router.replace(Routes.onboardingComplete);
+      router.replace(Routes.onboardingHospital);
     } catch (err) {
       const details = interpretServerError(err);
       setError(details[0] || "Could not upload profile picture.");
@@ -66,7 +66,7 @@ export default function ProfilePicturePage() {
   };
 
   const skip = () => {
-    router.replace(Routes.onboardingComplete);
+    router.replace(Routes.onboardingHospital);
   };
 
   return (

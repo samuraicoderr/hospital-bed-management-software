@@ -1,7 +1,7 @@
 # Hospital Bed Management System (HBMS)  
-## Production-Grade System Plan
 
----
+![Demo](./.docs/screenshots/demo.png)
+
 
 # 1. Executive Summary
 

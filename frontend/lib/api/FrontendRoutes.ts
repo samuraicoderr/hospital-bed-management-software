@@ -15,9 +15,11 @@ export const FrontendRoutes = {
     resetPassword: '/auth/reset-password',
     onboarding: '/auth/onboarding',
     basicInfo: '/auth/onboarding/basic-info',
+    password: '/auth/onboarding/password',
     verifyEmail: '/auth/onboarding/verify-email',
     username: '/auth/onboarding/username',
     profilePicture: '/auth/onboarding/profile-picture',
+    hospital: '/auth/onboarding/hospital',
     complete: '/auth/onboarding/complete',
     oauthCallback: (provider: string) => `/auth/oauth/callback/${provider}`,
   },
@@ -29,9 +31,11 @@ export const FrontendRoutes = {
   resetPassword: '/auth/reset-password',
   loginSecondFactor: '/auth/login',
   onboardingBasicInfo: '/auth/onboarding/basic-info',
+  onboardingPassword: '/auth/onboarding/password',
   onboardingVerifyEmail: '/auth/onboarding/verify-email',
   onboardingUsername: '/auth/onboarding/username',
   onboardingProfilePicture: '/auth/onboarding/profile-picture',
+  onboardingHospital: '/auth/onboarding/hospital',
   onboardingComplete: '/auth/onboarding/complete',
 
   // Main application routes

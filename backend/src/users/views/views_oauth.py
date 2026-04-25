@@ -18,6 +18,7 @@ from src.config.settings.oauth_settings import (
 	REGISTERED_OAUTH_PROVIDER_NAMES,
 )
 from src.lib.django.views_mixin import ViewSetHelperMixin
+from src.users.models import User
 from src.users.auth import response_tokens
 from src.users.auth import _jwt_response, _mfa_required_response
 from src.users.serializers import OAuthCodeExchangeSerializer
@@ -151,6 +152,15 @@ class OAuthViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
 					"details": "Provider did not return an email. Ensure provider app is configured for email access.",
 				}
 			)
+	
+		
+		user.advance_onboarding(
+			from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION # skip to NEEDS_PASSWORD since we already have user info
+		)
+		user.save(
+			update_fields=["onboarding_status"]
+		)
+
 
 		return response_tokens(user, request=request)
 

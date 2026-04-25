@@ -100,7 +100,7 @@ export default function LoadingScreen({ minDuration = 1200 }: LoadingScreenProps
 
           {/* Tagline */}
           <p className="text-sm text-gray-400 font-medium tracking-wide">
-            Loading Awesomeness
+            Loading hospital data...
           </p>
         </div>
       </div>

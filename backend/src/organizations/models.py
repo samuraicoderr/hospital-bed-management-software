@@ -2,41 +2,91 @@
 Organization models for BedFlow - Multi-hospital support per section 4.7
 """
 
-from django.db import models
 from django.conf import settings
 from django.core.validators import RegexValidator
+from django.db import models
 
-from src.lib.utils.uuid7 import uuid7
 from src.common.constants import GenderRestriction
+from src.lib.utils.uuid7 import uuid7
+
+
+class HospitalType(models.TextChoices):
+    GENERAL = "general", "General Hospital"
+    SPECIALTY = "specialty", "Specialty Hospital"
+    TEACHING = "teaching", "Teaching Hospital"
+    CHILDREN = "children", "Children's Hospital"
+    PSYCHIATRIC = "psychiatric", "Psychiatric Hospital"
+    REHABILITATION = "rehabilitation", "Rehabilitation Hospital"
+
+
+class DepartmentType(models.TextChoices):
+    GENERAL_MEDICINE = "general_medicine", "General Medicine"
+    SURGERY = "surgery", "Surgery"
+    ICU = "icu", "ICU"
+    EMERGENCY = "emergency", "Emergency"
+    MATERNITY = "maternity", "Maternity"
+    PEDIATRICS = "pediatrics", "Pediatrics"
+    PSYCHIATRY = "psychiatry", "Psychiatry"
+    ONCOLOGY = "oncology", "Oncology"
+    ORTHOPEDICS = "orthopedics", "Orthopedics"
+    CARDIOLOGY = "cardiology", "Cardiology"
+    NEUROLOGY = "neurology", "Neurology"
+    GERIATRICS = "geriatrics", "Geriatrics"
+    REHABILITATION = "rehabilitation", "Rehabilitation"
+
+
+class WardType(models.TextChoices):
+    SINGLE = "single", "Single Room"
+    DOUBLE = "double", "Double Room"
+    MULTI = "multi", "Multi-bed Room"
+    BAY = "bay", "Bay"
+    ICU = "icu", "ICU Pod"
+    EMERGENCY = "emergency", "Emergency Bay"
+
+
+class HospitalStaffRole(models.TextChoices):
+    OWNER = "owner", "Owner"
+    SYSTEM_ADMINISTRATOR = "system_administrator", "System Administrator"
+    BED_MANAGER = "bed_manager", "Bed Manager"
+    NURSE_SUPERVISOR = "nurse_supervisor", "Nurse Supervisor"
+    ADMISSION_STAFF = "admission_staff", "Admission Staff"
+    HOUSEKEEPING_STAFF = "housekeeping_staff", "Housekeeping Staff"
+    EXECUTIVE_VIEWER = "executive_viewer", "Executive / Viewer"
+    CLINICAL_STAFF = "clinical_staff", "Clinical Staff"
+    WARD_CLERK = "ward_clerk", "Ward Clerk"
 
 
 class Organization(models.Model):
     """
     Top-level organization entity.
-    Can contain multiple hospitals (for hospital chains).
+    Can contain multiple hospitals for hospital chains.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+
     name = models.CharField(max_length=255)
+
     code = models.CharField(
         max_length=50,
         unique=True,
         validators=[
             RegexValidator(
-                regex=r'^[A-Z0-9_]+$',
-                message='Code must contain only uppercase letters, numbers, and underscores'
+                regex=r"^[A-Z0-9_]+$",
+                message="Code must contain only uppercase letters, numbers, and underscores",
             )
-        ]
+        ],
     )
+
     description = models.TextField(blank=True)
 
     # Contact Information
-    address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20)
-    phone = models.CharField(max_length=20)
-    email = models.EmailField()
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
 
     # Settings
     timezone = models.CharField(max_length=50, default="UTC")
@@ -54,12 +104,13 @@ class Organization(models.Model):
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="created_organizations"
+        related_name="created_organizations",
     )
 
     class Meta:
@@ -79,52 +130,50 @@ class Hospital(models.Model):
     Hospital entity within an organization.
     Per requirements section 4.1.1 - Hospital is top of bed hierarchy.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
-        related_name="hospitals"
+        related_name="hospitals",
     )
+
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
 
     # Hospital Details
     hospital_type = models.CharField(
         max_length=50,
-        choices=[
-            ("general", "General Hospital"),
-            ("specialty", "Specialty Hospital"),
-            ("teaching", "Teaching Hospital"),
-            ("children", "Children's Hospital"),
-            ("psychiatric", "Psychiatric Hospital"),
-            ("rehabilitation", "Rehabilitation Hospital"),
-        ],
-        default="general"
+        choices=HospitalType.choices,
+        default=HospitalType.GENERAL,
     )
+
     license_number = models.CharField(max_length=100, blank=True)
     tax_id = models.CharField(max_length=100, blank=True)
 
     # Contact Information
-    address = models.TextField()
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=100)
-    postal_code = models.CharField(max_length=20)
-    phone = models.CharField(max_length=20)
-    email = models.EmailField()
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    postal_code = models.CharField(max_length=20, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
     website = models.URLField(blank=True)
 
-    # Location (for mapping)
+    # Location for mapping
     latitude = models.DecimalField(
         max_digits=10,
         decimal_places=8,
         null=True,
-        blank=True
+        blank=True,
     )
+
     longitude = models.DecimalField(
         max_digits=11,
         decimal_places=8,
         null=True,
-        blank=True
+        blank=True,
     )
 
     # Hospital Settings
@@ -145,12 +194,13 @@ class Hospital(models.Model):
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="created_hospitals"
+        related_name="created_hospitals",
     )
 
     class Meta:
@@ -168,37 +218,45 @@ class Hospital(models.Model):
     def get_available_beds_count(self):
         """Get count of available beds."""
         from src.beds.models import Bed
+
         return Bed.objects.filter(
             ward__department__hospital=self,
             status="available",
-            is_active=True
+            is_active=True,
         ).count()
 
     def get_occupancy_rate(self):
         """Calculate current occupancy rate."""
         from src.beds.models import Bed
+
         total = Bed.objects.filter(
             ward__department__hospital=self,
-            is_active=True
+            is_active=True,
         ).count()
+
         occupied = Bed.objects.filter(
             ward__department__hospital=self,
             status="occupied",
-            is_active=True
+            is_active=True,
         ).count()
+
         return (occupied / total * 100) if total > 0 else 0
 
 
 class Building(models.Model):
     """
-    Building within a hospital (optional hierarchy level).
+    Building within a hospital.
+    Optional hierarchy level.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+
     hospital = models.ForeignKey(
         Hospital,
         on_delete=models.CASCADE,
-        related_name="buildings"
+        related_name="buildings",
     )
+
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -232,19 +290,23 @@ class Department(models.Model):
     Department/Ward within a hospital.
     Per requirements section 4.1.1 - Ward is part of bed hierarchy.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+
     hospital = models.ForeignKey(
         Hospital,
         on_delete=models.CASCADE,
-        related_name="departments"
+        related_name="departments",
     )
+
     building = models.ForeignKey(
         Building,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="departments"
+        related_name="departments",
     )
+
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -252,21 +314,7 @@ class Department(models.Model):
     # Department Type
     department_type = models.CharField(
         max_length=50,
-        choices=[
-            ("general_medicine", "General Medicine"),
-            ("surgery", "Surgery"),
-            ("icu", "ICU"),
-            ("emergency", "Emergency"),
-            ("maternity", "Maternity"),
-            ("pediatrics", "Pediatrics"),
-            ("psychiatry", "Psychiatry"),
-            ("oncology", "Oncology"),
-            ("orthopedics", "Orthopedics"),
-            ("cardiology", "Cardiology"),
-            ("neurology", "Neurology"),
-            ("geriatrics", "Geriatrics"),
-            ("rehabilitation", "Rehabilitation"),
-        ]
+        choices=DepartmentType.choices,
     )
 
     # Location
@@ -276,11 +324,11 @@ class Department(models.Model):
     # Capacity
     total_beds = models.PositiveIntegerField(default=0)
 
-    # Gender restriction (for wards with specific gender requirements)
+    # Gender restriction for wards with specific gender requirements
     gender_restriction = models.CharField(
         max_length=20,
         choices=GenderRestriction.choices,
-        default=GenderRestriction.NONE
+        default=GenderRestriction.NONE,
     )
 
     # Contact
@@ -294,12 +342,13 @@ class Department(models.Model):
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="created_departments"
+        related_name="created_departments",
     )
 
     class Meta:
@@ -317,10 +366,11 @@ class Department(models.Model):
     def get_available_beds(self):
         """Get available beds in this department."""
         from src.beds.models import Bed
+
         return Bed.objects.filter(
             ward__department=self,
             status="available",
-            is_active=True
+            is_active=True,
         )
 
 
@@ -329,12 +379,15 @@ class Ward(models.Model):
     Ward/Room grouping within a department.
     Per requirements section 4.1.1 - Room is part of bed hierarchy.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+
     department = models.ForeignKey(
         Department,
         on_delete=models.CASCADE,
-        related_name="wards"
+        related_name="wards",
     )
+
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=50)
     description = models.TextField(blank=True)
@@ -342,14 +395,7 @@ class Ward(models.Model):
     # Ward Type
     ward_type = models.CharField(
         max_length=50,
-        choices=[
-            ("single", "Single Room"),
-            ("double", "Double Room"),
-            ("multi", "Multi-bed Room"),
-            ("bay", "Bay"),
-            ("icu", "ICU Pod"),
-            ("emergency", "Emergency Bay"),
-        ]
+        choices=WardType.choices,
     )
 
     # Location
@@ -392,41 +438,36 @@ class HospitalStaff(models.Model):
     Links users to hospitals with specific roles.
     A user can be staff at multiple hospitals.
     """
+
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)
+
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="hospital_staff_roles"
+        related_name="hospital_staff_roles",
     )
+
     hospital = models.ForeignKey(
         Hospital,
         on_delete=models.CASCADE,
-        related_name="staff"
+        related_name="staff",
     )
+
     department = models.ForeignKey(
         Department,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="department_staff"
+        related_name="department_staff",
     )
 
     # Role
     role = models.CharField(
         max_length=50,
-        choices=[
-            ("system_administrator", "System Administrator"),
-            ("bed_manager", "Bed Manager"),
-            ("nurse_supervisor", "Nurse Supervisor"),
-            ("admission_staff", "Admission Staff"),
-            ("housekeeping_staff", "Housekeeping Staff"),
-            ("executive_viewer", "Executive / Viewer"),
-            ("clinical_staff", "Clinical Staff"),
-            ("ward_clerk", "Ward Clerk"),
-        ]
+        choices=HospitalStaffRole.choices,
     )
 
-    # Permissions override (JSON for flexibility)
+    # Permissions override
     additional_permissions = models.JSONField(default=dict, blank=True)
     restricted_permissions = models.JSONField(default=list, blank=True)
 
@@ -442,12 +483,13 @@ class HospitalStaff(models.Model):
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
     assigned_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="assigned_staff"
+        related_name="assigned_staff",
     )
 
     class Meta:
@@ -463,7 +505,7 @@ class HospitalStaff(models.Model):
         verbose_name_plural = "Hospital Staff"
 
     def __str__(self):
-        return f"{self.user.get_name()} - {self.role} at {self.hospital.code}"
+        return f"{self.user.get_name()} - {self.get_role_display()} at {self.hospital.code}"
 
     def has_permission(self, permission):
         """Check if staff member has a specific permission."""

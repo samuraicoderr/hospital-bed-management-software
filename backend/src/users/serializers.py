@@ -315,6 +315,9 @@ class Onboarding:
         last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
         password = serializers.CharField(max_length=500, write_only=True, required=False, allow_blank=True)
 
+    class ChangePasswordSerializer(UseOnboardingTokenSerializer):
+        password = serializers.CharField(max_length=500, write_only=True, required=True)
+
     class ChangeUserNameSerializer(UseOnboardingTokenSerializer):
         new_username = serializers.CharField(max_length=150, write_only=True, required=False, allow_blank=True)
 
@@ -325,6 +328,18 @@ class Onboarding:
             pass
 
         profile_picture = ProfilePictureField(required=True)
+    
+    try:
+        from src.organizations.serializers import CreateOrJoinFirstHospitalSerializerMixin
+        class CreateHospitalSerializer(
+            UseOnboardingTokenSerializer,
+            CreateOrJoinFirstHospitalSerializerMixin,
+            serializers.Serializer
+        ):
+            pass
+    except ImportError:
+        pass    
+
 
 
 # ─────────────────────────────────────────────

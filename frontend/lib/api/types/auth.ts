@@ -4,10 +4,12 @@
 
 export const OnboardingStatus = {
   NEEDS_BASIC_INFORMATION: "needs_basic_information",
+  NEEDS_PASSWORD: "needs_password",
   NEEDS_EMAIL_VERIFICATION: "needs_email_verification",
   NEEDS_PHONE_VERIFICATION: "needs_phone_verification",
   NEEDS_PROFILE_USERNAME: "needs_profile_username",
   NEEDS_PROFILE_PICTURE: "needs_profile_picture",
+  NEEDS_HOSPITAL: "needs_hospital",
   COMPLETED: "completed",
 } as const;
 
@@ -190,6 +192,18 @@ export interface SetBasicInfoResponse {
   user?: UserType;
 }
 
+export interface SetPasswordRequest {
+  onboarding_token: string;
+  password: string;
+}
+
+export interface SetPasswordResponse {
+  detail?: string;
+  code?: string;
+  onboarding_status?: OnboardingStatusType;
+  user?: UserType;
+}
+
 export interface ExchangeOnboardingTokensRequest {
   onboarding_token: string;
 }
@@ -205,6 +219,39 @@ export interface ExchangeOnboardingTokensResponse {
 export interface CheckUsernameResponse {
   available: boolean;
   message?: string;
+}
+
+export interface CreateHospitalRequest {
+  onboarding_token: string;
+  name: string;
+  code: string;
+  hospital_type?: string;
+  license_number?: string;
+  tax_id?: string;
+  address: string;
+  city: string;
+  state: string;
+  postal_code: string;
+  phone: string;
+  email: string;
+  website?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  timezone?: string;
+  total_beds?: number;
+  icu_beds?: number;
+  emergency_beds?: number;
+  cleaning_sla_minutes?: number;
+  auto_assign_cleaning?: boolean;
+  require_discharge_approval?: boolean;
+  organization_id?: string | null;
+}
+
+export interface CreateHospitalResponse {
+  detail?: string;
+  code?: string;
+  onboarding_status?: OnboardingStatusType;
+  user?: UserType;
 }
 
 /* -------------------- TYPE GUARDS -------------------- */
@@ -229,6 +276,7 @@ export function isOnboardingRequired(
   return (
     response.onboarding_required === true &&
     typeof response.onboarding_token === "string" &&
-    response.onboarding_token.length > 0
+    response.onboarding_token.length > 0 &&
+    typeof response.onboarding_status === "string"
   );
 }
