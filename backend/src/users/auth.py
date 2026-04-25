@@ -78,7 +78,7 @@ def _mfa_required_response(*, user, request=None):
     )
 
 
-def _onboarding_required_response(*, user, include_token=True):
+def _onboarding_required_response(user, include_token=True):
     return Response(
         {
             "onboarding_required": True,
@@ -91,7 +91,7 @@ def _onboarding_required_response(*, user, include_token=True):
 
 
 def response_tokens(user, request=None, *, skip_mfa=False):
-    if not user.is_onboarding_completed():
+    if not user.is_onboarding_completed() and not skip_mfa:
         return _onboarding_required_response(user=user)
     if not user.mfa_is_enabled or skip_mfa:
         return _jwt_response(serializer_or_user=user)

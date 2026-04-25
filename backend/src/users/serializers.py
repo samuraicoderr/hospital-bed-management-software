@@ -310,6 +310,11 @@ class Onboarding:
     class UseOnboardingTokenSerializer(serializers.Serializer):
         onboarding_token = serializers.CharField(max_length=500, write_only=True)
 
+    class ChangeBasicInfoSerializer(UseOnboardingTokenSerializer):
+        first_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+        last_name = serializers.CharField(max_length=150, required=False, allow_blank=True)
+        password = serializers.CharField(max_length=500, write_only=True, required=False, allow_blank=True)
+
     class ChangeUserNameSerializer(UseOnboardingTokenSerializer):
         new_username = serializers.CharField(max_length=150, write_only=True, required=False, allow_blank=True)
 

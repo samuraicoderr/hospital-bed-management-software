@@ -158,6 +158,8 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
         "mfa_verify_webauthn": MFAWebAuthnVerifySerializer,
         "mfa_register_push_device": MFAPushDeviceSerializer,
         "get_onboarding_token": GetOboardingTokenSerializer,
+        "exchange_onboarding_tokens_for_login_tokens": Onboarding.UseOnboardingTokenSerializer,
+        "set_user_basic_info": Onboarding.ChangeBasicInfoSerializer,
         "set_username": Onboarding.ChangeUserNameSerializer,
         "set_profile_picture": Onboarding.ChangeProfilePictureSerializer,
         "join_waitlist": WaitListSerializer,      # was missing
@@ -190,7 +192,9 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
         "send_forgot_password_otp": (AllowAny,),
         "reset_forgot_password": (AllowAny,),
         "get_onboarding_token": (AllowAny,),
+        "exchange_onboarding_tokens_for_login_tokens": (AllowAny,),
         "set_username": (AllowAny,),
+        "set_user_basic_info": (AllowAny,),
         "set_profile_picture": (AllowAny,),
         "check_username": (AllowAny,),
     }
@@ -514,6 +518,71 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
             raise ValidationError({"error": "user onboarding is already completed"})
 
         return _onboarding_required_response(user)
+    
+    @action(detail=False, methods=["post"], url_path="onboarding/exchange_onboarding_tokens_for_login_tokens")
+    def exchange_onboarding_tokens_for_login_tokens(self, request):
+        """
+        Exchange valid onboarding tokens for regular JWT auth tokens.
+        Used when the user has just completed onboarding.
+
+        """
+        # Since a user with completed onboarding process can't generate another onboarding token this is safish
+        # but once we once we return the real deal we shouldn't do it again.
+        serializer = self.get_serializer_class()(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = _resolve_user_from_onboarding_token(
+            serializer.validated_data["onboarding_token"]
+        )
+
+        if not user.is_onboarding_completed():
+            raise ValidationError({"error": "user onboarding is not yet completed"})
+
+        return response_tokens(user, request=request, skip_mfa=True)
+
+    @action(detail=False, methods=["post"], url_path="onboarding/set_user_basic_info")
+    def set_user_basic_info(self, request):
+        """
+        Set the user's basic information during onboarding.
+        stuff like
+        ```json
+        {
+            "first_name": "Alice",
+            "last_name": "Smith",
+            "password": "...",
+            ...
+        }
+        ```
+        These are actually collected during registration it's only ever needed if the user uses oauth to signup and we didn't get enough info from the provider.
+        """
+        serializer = self.get_serializer_class()(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = _resolve_user_from_onboarding_token(
+            serializer.validated_data["onboarding_token"]
+        )
+
+        if user.is_onboarding_completed():
+            raise ValidationError({"error": "user onboarding is already completed"})
+        if user.is_future_step(User.OnboardingStatus.NEEDS_BASIC_INFORMATION):
+            raise ValidationError({"error": "user has not yet reached the basic information step"})
+
+        with transaction.atomic():
+            user = User.objects.select_for_update().get(pk=user.pk)
+            user.first_name = serializer.validated_data["first_name"]
+            user.last_name = serializer.validated_data["last_name"]
+            user.set_password(serializer.validated_data["password"])
+            user.save()
+            if user.is_email_verified:
+                # skip email verification step if email is already verified (e.g. from OAuth signup)s
+                user.advance_onboarding(from_step=User.OnboardingStatus.NEEDS_EMAIL_VERIFICATION)
+            else:
+                user.advance_onboarding(from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION)
+
+        return Response(
+            CreateUserSerializer(user, context={"request": request}).data,
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=False, methods=["post"], url_path="onboarding/set_username")
     def set_username(self, request):

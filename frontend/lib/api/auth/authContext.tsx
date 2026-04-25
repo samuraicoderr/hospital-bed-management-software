@@ -74,30 +74,26 @@ export function isApiErrorType(error: unknown): error is ApiErrorType {
   );
 }
 
+
+const ONBOARDING_ROUTE_MAP: Record<OnboardingStatusType, string> = {
+  [OnboardingStatus.NEEDS_BASIC_INFORMATION]: Routes.onboardingBasicInfo,
+  [OnboardingStatus.NEEDS_EMAIL_VERIFICATION]: Routes.onboardingVerifyEmail,
+  // Phone verification is currently skipped i frontend flow.
+  [OnboardingStatus.NEEDS_PHONE_VERIFICATION]: Routes.onboardingUsername,
+  [OnboardingStatus.NEEDS_PROFILE_USERNAME]: Routes.onboardingUsername,
+  [OnboardingStatus.NEEDS_PROFILE_PICTURE]: Routes.onboardingProfilePicture,
+  [OnboardingStatus.COMPLETED]: Routes.home,
+};
+
+
 /**
  * Maps an onboarding status to its corresponding frontend route.
  * Used to redirect users to the correct onboarding step after login/register.
  */
-export function getOnboardingRoute(status: OnboardingStatusType): string {
-  switch (status) {
-    case OnboardingStatus.NEEDS_BASIC_INFORMATION:
-      // Basic info is collected during registration itself,
-      // so if we land here the user should register
-      return Routes.auth.register;
-    case OnboardingStatus.NEEDS_EMAIL_VERIFICATION:
-      return Routes.onboardingVerifyEmail;
-    case OnboardingStatus.NEEDS_PHONE_VERIFICATION:
-      // Phone verification is currently skipped in frontend flow.
-      return Routes.onboardingUsername;
-    case OnboardingStatus.NEEDS_PROFILE_USERNAME:
-      return Routes.onboardingUsername;
-    case OnboardingStatus.NEEDS_PROFILE_PICTURE:
-      return Routes.onboardingProfilePicture;
-    case OnboardingStatus.COMPLETED:
-      return Routes.home;
-    default:
-      return Routes.home;
-  }
+export function getOnboardingRoute(
+  status: OnboardingStatusType
+): string {
+  return ONBOARDING_ROUTE_MAP[status] ?? Routes.home;
 }
 
 
@@ -169,6 +165,7 @@ export interface AuthContextType {
   onboardingToken: string | null;
   setOnboardingToken: (onboardingToken: string | null) => void;
   doAuthCheck: () => Promise<void>;
+  exchangeOnboardingTokenForAuth: (onboardingToken: string) => Promise<void>;
 }
 
 // Create context
@@ -459,6 +456,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     }
   };
 
+  /**
+   * Exchange onboarding token for JWT auth tokens after completing onboarding
+   */
+  const exchangeOnboardingTokenForAuth = async (onboardingToken: string): Promise<void> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const OnboardingService = (await import("@/lib/api/services/Onboarding.Service")).default;
+      const response = await OnboardingService.exchangeOnboardingTokens({
+        onboarding_token: onboardingToken,
+      });
+
+      // Initialize token manager with JWT tokens
+      authUtils.initializeAuth({
+        access: response.access,
+        refresh: response.refresh,
+        access_expiry: response.access_expiry || "",
+        refresh_expiry: response.refresh_expiry || "",
+      });
+
+      // Clear onboarding state
+      setOnboardingToken(null);
+      setPartialUser(null);
+
+      // Fetch user data
+      await fetchCurrentUser();
+
+      console.log("[Auth] Onboarding token exchange successful");
+    } catch (error) {
+      console.error("[Auth] Failed to exchange onboarding token:", error);
+      if (isApiErrorType(error)) {
+        setError(error);
+      }
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated: !!user && authUtils.isAuthenticated(),
@@ -475,6 +512,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
     onboardingToken,
     setOnboardingToken,
     doAuthCheck,
+    exchangeOnboardingTokenForAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

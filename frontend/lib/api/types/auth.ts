@@ -176,6 +176,32 @@ export interface EmailVerificationResponse {
   user?: UserType;
 }
 
+export interface SetBasicInfoRequest {
+  onboarding_token: string;
+  first_name?: string;
+  last_name?: string;
+  password?: string;
+}
+
+export interface SetBasicInfoResponse {
+  detail?: string;
+  code?: string;
+  onboarding_status?: OnboardingStatusType;
+  user?: UserType;
+}
+
+export interface ExchangeOnboardingTokensRequest {
+  onboarding_token: string;
+}
+
+export interface ExchangeOnboardingTokensResponse {
+  access: string;
+  refresh: string;
+  access_expiry?: string;
+  refresh_expiry?: string;
+  user?: UserType;
+}
+
 export interface CheckUsernameResponse {
   available: boolean;
   message?: string;
@@ -197,6 +223,12 @@ export function isMFARequired(
 
 export function isOnboardingRequired(
   response: OAuthLoginResponse
-): response is OAuthLoginResponse & Required<Pick<OAuthLoginResponse, "onboarding_token" | "onboarding_status">> {
-  return !!response.onboarding_token && !!response.onboarding_status;
+): response is OAuthLoginResponse & Required<
+  Pick<OAuthLoginResponse, "onboarding_token" | "onboarding_status">
+> {
+  return (
+    response.onboarding_required === true &&
+    typeof response.onboarding_token === "string" &&
+    response.onboarding_token.length > 0
+  );
 }

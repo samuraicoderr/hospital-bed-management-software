@@ -93,6 +93,7 @@ const appConfig = {
     green_svg: '/app-logos/bedflow-logo-green.svg',
     dark_svg: '/app-logos/bedflow-logo-black.svg',
     white_svg: '/app-logos/bedflow-logo-white.png',
+    grey: '/app-logos/bedflow-logo-grey.png',
     favicons: {
       green: '/app-logos/favicons/bedflow-logo-green.ico',
       dark: '/app-logos/favicons/bedflow-logo-black.ico',

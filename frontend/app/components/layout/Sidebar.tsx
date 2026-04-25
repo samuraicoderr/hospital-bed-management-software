@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import SidebarItem from "./SidebarItem";
 import { useRouter, usePathname } from "next/navigation";
 import FrontendRoutes from "@/lib/api/FrontendRoutes";
+import appConfig from "@/lib/appconfig";
 
 interface SidebarProps {
   hospitalName: string;
@@ -79,7 +80,8 @@ export default function Sidebar({
         <div className="p-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-[#0F6E56] flex items-center justify-center flex-shrink-0">
-              <HeartPulse className="w-5 h-5 text-white" />
+              {/* <HeartPulse className="w-5 h-5 text-white" /> */}
+              <img src={appConfig.logos.white_svg} alt="Logo" className="w-5 h-5 object-contain" />
             </div>
             <div className="flex flex-col min-w-0">
               <span className="text-xs text-gray-400 font-medium leading-none uppercase tracking-wider">

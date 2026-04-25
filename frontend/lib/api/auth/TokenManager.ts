@@ -11,8 +11,8 @@ import { AUTH_PRESENCE_COOKIE } from "@/lib/api/auth/redirect";
 export interface TokenResponse {
   access: string;
   refresh: string;
-  access_expiry: string;
-  refresh_expiry: string;
+  access_expiry?: string;
+  refresh_expiry?: string;
 }
 
 export interface FirstFactorTokenResponse {
@@ -97,8 +97,12 @@ export const useTokenStore = create<TokenState>()(
 
       // Actions
       setTokens: (tokenResponse: TokenResponse) => {
-        const accessExpiry = parseInt(tokenResponse.access_expiry, 10);
-        const refreshExpiry = parseInt(tokenResponse.refresh_expiry, 10);
+        const accessExpiry = tokenResponse.access_expiry
+          ? parseInt(tokenResponse.access_expiry, 10)
+          : Math.floor(Date.now() / 1000) + 3600; // Default to 1 hour if not provided
+        const refreshExpiry = tokenResponse.refresh_expiry
+          ? parseInt(tokenResponse.refresh_expiry, 10)
+          : Math.floor(Date.now() / 1000) + 86400; // Default to 24 hours if not provided
 
         // Validate expiry times
         const now = Math.floor(Date.now() / 1000);

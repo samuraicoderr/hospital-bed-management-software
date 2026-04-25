@@ -45,8 +45,10 @@ export const BackendRoutes = {
       sendPhoneOtp: `${API_VERSION}/auth/onboarding/phone/send_phone_verification_otp/`,
       checkPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
       getOnboardingToken: `${API_VERSION}/auth/onboarding/get_onboarding_token/`,
+      setUserBasicInfo: `${API_VERSION}/auth/onboarding/set_user_basic_info/`,
       setUsername: `${API_VERSION}/auth/onboarding/set_username/`,
       setProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
+      exchangeTokens: `${API_VERSION}/auth/onboarding/exchange_onboarding_tokens_for_login_tokens/`,
     },
 
     // Legacy flat aliases for backward compatibility
@@ -57,8 +59,10 @@ export const BackendRoutes = {
     checkEmailOtp: `${API_VERSION}/auth/onboarding/email/check_email_verification_otp/`,
     checkPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
     getOnboardingToken: `${API_VERSION}/auth/onboarding/get_onboarding_token/`,
+    setBasicInfo: `${API_VERSION}/auth/onboarding/set_user_basic_info/`,
     setUsername: `${API_VERSION}/auth/onboarding/set_username/`,
     setProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
+    exchangeOnboardingTokens: `${API_VERSION}/auth/onboarding/exchange_onboarding_tokens_for_login_tokens/`,
   },
 
   /* =========================
@@ -280,8 +284,10 @@ export const BackendRoutes = {
   onboardingCheckEmailOtp: `${API_VERSION}/auth/onboarding/email/check_email_verification_otp/`,
   onboardingSendPhoneOtp: `${API_VERSION}/auth/onboarding/phone/send_phone_verification_otp/`,
   onboardingCheckPhoneOtp: `${API_VERSION}/auth/onboarding/phone/check_phone_verification_otp/`,
+  onboardingSetUserBasicInfo: `${API_VERSION}/auth/onboarding/set_user_basic_info/`,
   onboardingSetUsername: `${API_VERSION}/auth/onboarding/set_username/`,
   onboardingSetProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
+  onboardingExchangeTokens: `${API_VERSION}/auth/onboarding/exchange_onboarding_tokens_for_login_tokens/`,
 
   oauthAuthorizeCode: (provider: string) => `${API_VERSION}/oauth/${provider}/login-or-register/`,
   oauthLoginOrRegister: (provider: string) => `${API_VERSION}/oauth/${provider}/login-or-register/`,

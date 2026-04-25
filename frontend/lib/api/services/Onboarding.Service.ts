@@ -7,6 +7,10 @@ import type {
   SetUsernameResponse,
   RegisterResponseType,
   CheckUsernameResponse,
+  SetBasicInfoRequest,
+  SetBasicInfoResponse,
+  ExchangeOnboardingTokensRequest,
+  ExchangeOnboardingTokensResponse,
 } from "../types/auth";
 
 /* -------------------- TYPES -------------------- */
@@ -113,6 +117,26 @@ export class OnboardingService {
     const res = await apiClient.post<CheckUsernameResponse>(
       BackendRoutes.checkUsername,
       { username },
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
+  /** Set basic info (first name, last name, password) during onboarding */
+  static async setBasicInfo(data: SetBasicInfoRequest): Promise<SetBasicInfoResponse> {
+    const res = await apiClient.post<SetBasicInfoResponse>(
+      BackendRoutes.onboardingSetUserBasicInfo,
+      data,
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
+  /** Exchange onboarding token for JWT auth tokens after completing onboarding */
+  static async exchangeOnboardingTokens(data: ExchangeOnboardingTokensRequest): Promise<ExchangeOnboardingTokensResponse> {
+    const res = await apiClient.post<ExchangeOnboardingTokensResponse>(
+      BackendRoutes.onboardingExchangeTokens,
+      data,
       { requiresAuth: false }
     );
     return res.data;
