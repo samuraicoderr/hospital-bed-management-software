@@ -11,7 +11,7 @@ import { interpretServerError } from "@/lib/utils";
 
 export default function BasicInfoPage() {
   const router = useRouter();
-  const { onboardingToken, partialUser, updatePartialUser } = useAuth();
+  const { onboardingToken, partialUser, updatePartialUser, exchangeOnboardingTokenForAuth } = useAuth();
 
   const [firstName, setFirstName] = useState(partialUser?.first_name || "");
   const [lastName, setLastName] = useState(partialUser?.last_name || "");
@@ -27,7 +27,31 @@ export default function BasicInfoPage() {
       router.replace(Routes.login);
       return;
     }
-  }, [token, router]);
+
+    // Fetch latest user data from backend
+    const fetchUserData = async () => {
+      try {
+        const userData = await OnboardingService.getUserData(token);
+        updatePartialUser({
+          email: userData.email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          username: userData.username,
+          profile_picture: userData.profile_picture,
+          onboarding_status: userData.onboarding_status,
+          onboarding_flow: userData.onboarding_flow,
+        });
+        // Update form fields with fetched data
+        if (userData.first_name) setFirstName(userData.first_name);
+        if (userData.last_name) setLastName(userData.last_name);
+      } catch (err) {
+        // Silently fail - we'll use partialUser data as fallback
+        console.error("Failed to fetch user data:", err);
+      }
+    };
+
+    fetchUserData();
+  }, [token, router, updatePartialUser]);
 
   const submit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,7 +79,12 @@ export default function BasicInfoPage() {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
       });
-      if (result.onboarding_status) {
+      
+      // Check if onboarding is completed and auto-login
+      if (result.onboarding_status === "completed") {
+        await exchangeOnboardingTokenForAuth(token);
+        router.replace(Routes.dashboard);
+      } else if (result.onboarding_status) {
         const nextRoute = getOnboardingRoute(result.onboarding_status);
         router.replace(nextRoute);
       }
@@ -113,22 +142,12 @@ export default function BasicInfoPage() {
           disabled={loading}
         />
 
-        <div style={{ marginTop: "1.25rem" }} className="flex gap-3">
-          <div className="flex-1">
-            <SubmitButton
-              label="Continue"
-              loading={loading}
-              disabled={loading || !firstName || !lastName}
-            />
-          </div>
-          <button
-            type="button"
-            onClick={skip}
-            disabled={loading}
-            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Skip
-          </button>
+        <div style={{ marginTop: "1.25rem" }}>
+          <SubmitButton
+            label="Continue"
+            loading={loading}
+            disabled={loading || !firstName || !lastName}
+          />
         </div>
       </form>
     </div>

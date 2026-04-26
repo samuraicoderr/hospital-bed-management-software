@@ -153,12 +153,13 @@ class OAuthViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
 				}
 			)
 	
-		
+		user.username = user.email.split("@")[0]
 		user.advance_onboarding(
-			from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION 
+			from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION,
+			to_commit=False,
 		)
 		user.save(
-			update_fields=["onboarding_status"]
+			update_fields=["onboarding_status", "username"]
 		)
 
 

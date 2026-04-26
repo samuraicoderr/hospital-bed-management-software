@@ -165,8 +165,9 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
         "set_username": Onboarding.ChangeUserNameSerializer,
         "set_profile_picture": Onboarding.ChangeProfilePictureSerializer,
         "create_or_join_first_hospital": Onboarding.CreateHospitalSerializer,  # reusing the same serializer since it only has the onboarding token and the hospital name is optional
+        "get_onboarding_user_data": Onboarding.UseOnboardingTokenSerializer,
         "join_waitlist": WaitListSerializer,      # was missing
-        "check_username": CheckUsernameSerializer,
+        "check_username": Onboarding.CheckUserNameSerializer,
         "qr_image_for_2fa": EmptySerializer,      # GET with no body
     }
 
@@ -202,6 +203,7 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
         "create_or_join_first_hospital": (AllowAny,),
         "check_username": (AllowAny,),
         "set_password": (AllowAny,),
+        "get_onboarding_user_data": (AllowAny,),
     }
 
     # ── Waitlist ──────────────────────────────
@@ -213,10 +215,13 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
         serializer = self.get_serializer_class()(data=request.data)
         serializer.is_valid(raise_exception=True)
 
+        user = _resolve_user_from_onboarding_token(
+            serializer.validated_data["onboarding_token"]
+        )
         username = serializer.validated_data["username"].strip()
         if not username:
             return Response({"error": "username cannot be blank"}, status=status.HTTP_400_BAD_REQUEST)
-        if User.objects.filter(username=username).exists():
+        if User.objects.exclude(pk=user.pk).filter(username=username).exists():
             return Response({"available": False, "username": username}, status=status.HTTP_200_OK)
         return Response({"available": True, "username": username}, status=status.HTTP_200_OK)
 
@@ -525,7 +530,28 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
             raise ValidationError({"error": "user onboarding is already completed"})
 
         return _onboarding_required_response(user)
-    
+
+    @action(detail=False, methods=["post"], url_path="onboarding/get_user_data")
+    def get_onboarding_user_data(self, request):
+        """
+        Get current user data during onboarding using onboarding token.
+        Returns user's current field values and onboarding status.
+        """
+        serializer = self.get_serializer_class()(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = _resolve_user_from_onboarding_token(
+            serializer.validated_data["onboarding_token"]
+        )
+
+        if user.is_onboarding_completed():
+            raise ValidationError({"error": "user onboarding is already completed"})
+
+        return Response(
+            CreateUserSerializer(user, context={"request": request}).data,
+            status=status.HTTP_200_OK,
+        )
+
     @action(detail=False, methods=["post"], url_path="onboarding/exchange_onboarding_tokens_for_login_tokens")
     def exchange_onboarding_tokens_for_login_tokens(self, request):
         """

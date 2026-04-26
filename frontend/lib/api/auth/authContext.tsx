@@ -34,6 +34,7 @@ import {
   RegisterResponseType,
   OnboardingStatus,
   OnboardingStatusType,
+  ProfilePictureUrls,
 } from "../types/auth";
 import { buildLoginRedirectPath } from "@/lib/api/auth/redirect";
 
@@ -50,7 +51,7 @@ export interface PartialUser {
   first_name?: string;
   last_name?: string;
   username?: string;
-  profile_picture?: string | null;
+  profile_picture?: string | ProfilePictureUrls | null;
   phone?: string;
   is_email_verified?: boolean;
   is_phone_verified?: boolean;

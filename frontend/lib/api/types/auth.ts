@@ -36,6 +36,13 @@ export type OAuthProvider = OAuthProviderType;
 // User
 // ─────────────────────────────────────────────
 
+export interface ProfilePictureUrls {
+  original: string;
+  thumbnail: string;
+  medium_square_crop: string;
+  small_square_crop: string;
+}
+
 export interface UserType {
   id: string;
   username: string;
@@ -43,7 +50,7 @@ export interface UserType {
   phone_number: string | null;
   first_name: string;
   last_name: string;
-  profile_picture: string | null;
+  profile_picture: string | ProfilePictureUrls | null;
   picture_url: string | null;
   is_email_verified: boolean;
   is_phone_number_verified: boolean;
@@ -85,7 +92,7 @@ export interface RegisterResponseType {
   first_name: string;
   last_name: string;
   email: string;
-  profile_picture: string | null;
+  profile_picture: string | ProfilePictureUrls | null;
   phone_number: string | null;
   onboarding_status: OnboardingStatusType;
   onboarding_flow: string[];

@@ -116,11 +116,11 @@ export class OnboardingService {
     return res.data;
   }
 
-  /** Check if a username is available */
-  static async checkUsername(username: string): Promise<CheckUsernameResponse> {
+  /** Check if a username is available. Requires onboarding token to exclude current user. */
+  static async checkUsername(username: string, onboardingToken: string): Promise<CheckUsernameResponse> {
     const res = await apiClient.post<CheckUsernameResponse>(
       BackendRoutes.checkUsername,
-      { username },
+      { username, onboarding_token: onboardingToken },
       { requiresAuth: false }
     );
     return res.data;
@@ -161,6 +161,16 @@ export class OnboardingService {
     const res = await apiClient.post<CreateHospitalResponse>(
       BackendRoutes.onboardingCreateOrJoinFirstHospital,
       data,
+      { requiresAuth: false }
+    );
+    return res.data;
+  }
+
+  /** Get current user data during onboarding */
+  static async getUserData(onboardingToken: string): Promise<RegisterResponseType> {
+    const res = await apiClient.post<RegisterResponseType>(
+      BackendRoutes.onboardingGetUserData,
+      { onboarding_token: onboardingToken },
       { requiresAuth: false }
     );
     return res.data;

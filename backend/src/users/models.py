@@ -187,7 +187,7 @@ class OnboardingMixin:
         # Kept for compatibility with permission checks.
         return self.is_onboarding_completed()
 
-    def advance_onboarding(self, from_step=None, strict: bool = False):
+    def advance_onboarding(self, from_step=None, strict: bool = False, to_commit=True) -> OnboardingStatus:
         """
         Advance onboarding by exactly one logical step.
 
@@ -256,7 +256,8 @@ class OnboardingMixin:
         # Prevent unnecessary writes
         if next_step != current_step or _must_save:
             self.onboarding_status = next_step
-            self.save(update_fields=["onboarding_status"])
+            if to_commit:
+                self.save(update_fields=["onboarding_status"])
 
         return self.onboarding_status
 

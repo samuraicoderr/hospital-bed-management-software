@@ -130,8 +130,11 @@ export default function OnboardingLayout({
       return;
     }
 
-    // Enforce correct step
-    if (activeStep && pathname !== activeStep.route) {
+    // Check if current pathname is a valid step in the flow
+    const isValidStep = stepConfig.some((step) => step.route === pathname);
+
+    // Only redirect if pathname is not a valid step in the flow
+    if (!isValidStep && activeStep) {
       hasRedirected.current = true;
       router.replace(activeStep.route);
     }
@@ -142,6 +145,7 @@ export default function OnboardingLayout({
     user,
     pathname,
     activeStep,
+    stepConfig,
     router,
   ]);
 

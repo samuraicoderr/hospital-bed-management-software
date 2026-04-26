@@ -298,6 +298,7 @@ export const BackendRoutes = {
   onboardingSetUsername: `${API_VERSION}/auth/onboarding/set_username/`,
   onboardingSetProfilePicture: `${API_VERSION}/auth/onboarding/set_profile_picture/`,
   onboardingCreateOrJoinFirstHospital: `${API_VERSION}/auth/onboarding/create_or_join_first_hospital/`,
+  onboardingGetUserData: `${API_VERSION}/auth/onboarding/get_user_data/`,
   onboardingExchangeTokens: `${API_VERSION}/auth/onboarding/exchange_onboarding_tokens_for_login_tokens/`,
 
   oauthAuthorizeCode: (provider: string) => `${API_VERSION}/oauth/${provider}/login-or-register/`,

@@ -24,7 +24,7 @@ function generateHospitalCode(name: string): string {
 
 export default function HospitalPage() {
   const router = useRouter();
-  const { onboardingToken, partialUser, updatePartialUser } = useAuth();
+  const { onboardingToken, partialUser, updatePartialUser, exchangeOnboardingTokenForAuth } = useAuth();
   const [mode, setMode] = useState<Mode>("create");
   const [invitationToken, setInvitationToken] = useState("");
 
@@ -43,6 +43,7 @@ export default function HospitalPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const token = useMemo(() => onboardingToken || partialUser?.onboarding_token || "", [onboardingToken, partialUser?.onboarding_token]);
 
@@ -98,6 +99,8 @@ export default function HospitalPage() {
     }
 
     setLoading(true);
+    setFieldErrors({});
+    setError(null);
     try {
       const result = await OnboardingService.createOrJoinFirstHospital({
         onboarding_token: token,
@@ -114,13 +117,41 @@ export default function HospitalPage() {
         email: email.trim() || undefined,
       });
       updatePartialUser({ onboarding_status: result.onboarding_status });
-      if (result.onboarding_status) {
+      
+      // Check if onboarding is completed and auto-login
+      if (result.onboarding_status === "completed") {
+        await exchangeOnboardingTokenForAuth(token);
+        router.replace(Routes.dashboard);
+      } else if (result.onboarding_status) {
         const nextRoute = getOnboardingRoute(result.onboarding_status);
         router.replace(nextRoute);
       }
-    } catch (err) {
-      const details = interpretServerError(err);
-      setError(details[0] || "Could not create hospital.");
+    } catch (err: any) {
+      // Check for field-specific errors
+      if (err?.response?.data) {
+        const errorData = err.response.data;
+        const newFieldErrors: Record<string, string> = {};
+        
+        // Handle errors in format { "field": ["error message"] }
+        for (const [field, messages] of Object.entries(errorData)) {
+          if (Array.isArray(messages) && messages.length > 0) {
+            newFieldErrors[field] = messages[0];
+          } else if (typeof messages === 'string') {
+            newFieldErrors[field] = messages;
+          }
+        }
+        
+        if (Object.keys(newFieldErrors).length > 0) {
+          setFieldErrors(newFieldErrors);
+          setError("Please fix the errors below.");
+        } else {
+          const details = interpretServerError(err);
+          setError(details[0] || "Could not create hospital.");
+        }
+      } else {
+        const details = interpretServerError(err);
+        setError(details[0] || "Could not create hospital.");
+      }
     } finally {
       setLoading(false);
     }
@@ -195,6 +226,7 @@ export default function HospitalPage() {
               placeholder="Enter hospital name"
               required
               disabled={loading}
+              error={fieldErrors.name}
             />
             <AuthInput
               id="hospital-code"
@@ -206,6 +238,7 @@ export default function HospitalPage() {
               }}
               placeholder="Auto-generated from hospital name"
               disabled={loading}
+              error={fieldErrors.code}
             />
 
             <div style={{ marginBottom: "1rem" }}>
@@ -220,14 +253,14 @@ export default function HospitalPage() {
               </select>
             </div>
 
-            <AuthInput id="address" label="Address (optional)" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" disabled={loading} />
+            <AuthInput id="address" label="Address (optional)" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" disabled={loading} error={fieldErrors.address} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-              <AuthInput id="city" label="City (optional)" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" disabled={loading} />
-              <AuthInput id="state" label="State/Province (optional)" value={state} onChange={(e) => setState(e.target.value)} placeholder="State" disabled={loading} />
+              <AuthInput id="city" label="City (optional)" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" disabled={loading} error={fieldErrors.city} />
+              <AuthInput id="state" label="State/Province (optional)" value={state} onChange={(e) => setState(e.target.value)} placeholder="State" disabled={loading} error={fieldErrors.state} />
             </div>
-            <AuthInput id="postal-code" label="Postal/ZIP code (optional)" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Postal code" disabled={loading} />
-            <AuthInput id="phone" label="Phone number (optional)" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" disabled={loading} />
-            <AuthInput id="email" label="Email (optional)" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hospital@example.com" disabled={loading} />
+            <AuthInput id="postal-code" label="Postal/ZIP code (optional)" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Postal code" disabled={loading} error={fieldErrors.postal_code} />
+            <AuthInput id="phone" label="Phone number (optional)" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" disabled={loading} error={fieldErrors.phone} />
+            <AuthInput id="email" label="Email (optional)" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hospital@example.com" disabled={loading} error={fieldErrors.email} />
             <div style={{ marginTop: "1.25rem" }}>
               <SubmitButton label="Create Hospital" loading={loading} disabled={loading} />
             </div>

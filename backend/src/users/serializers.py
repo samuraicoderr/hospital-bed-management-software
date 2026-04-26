@@ -321,6 +321,9 @@ class Onboarding:
     class ChangeUserNameSerializer(UseOnboardingTokenSerializer):
         new_username = serializers.CharField(max_length=150, write_only=True, required=False, allow_blank=True)
 
+    class CheckUserNameSerializer(UseOnboardingTokenSerializer):
+        username = serializers.CharField(max_length=150, write_only=True, required=True)
+
     class ChangeProfilePictureSerializer(UseOnboardingTokenSerializer):
 
         @extend_schema_field(OpenApiTypes.BINARY)

@@ -11,11 +11,11 @@ import { interpretServerError } from "@/lib/utils";
 
 export default function ProfilePicturePage() {
   const router = useRouter();
-  const { onboardingToken, partialUser, updatePartialUser } = useAuth();
+  const { onboardingToken, partialUser, updatePartialUser, exchangeOnboardingTokenForAuth } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(partialUser?.profile_picture || null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +25,40 @@ export default function ProfilePicturePage() {
   }, [onboardingToken, partialUser?.onboarding_token]);
 
   useEffect(() => {
-    if (partialUser?.profile_picture) {
-      setPreview(partialUser.profile_picture);
+    if (!token) {
+      router.replace(Routes.login);
+      return;
     }
-  }, [partialUser?.profile_picture]);
+
+    // Fetch latest user data from backend
+    const fetchUserData = async () => {
+      try {
+        const userData = await OnboardingService.getUserData(token);
+        updatePartialUser({
+          email: userData.email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          username: userData.username,
+          profile_picture: userData.profile_picture,
+          onboarding_status: userData.onboarding_status,
+          onboarding_flow: userData.onboarding_flow,
+        });
+        // Update preview with fetched data
+        if (userData.profile_picture) {
+          const pp = userData.profile_picture;
+          const previewUrl = typeof pp === 'string' ? pp : (pp.medium_square_crop || pp.original || null);
+          setPreview(previewUrl);
+        } else {
+          setPreview(null);
+        }
+      } catch (err) {
+        // Silently fail - we'll use partialUser data as fallback
+        console.error("Failed to fetch user data:", err);
+      }
+    };
+
+    fetchUserData();
+  }, [token, router, updatePartialUser]);
 
   const onFile = (nextFile: File | null) => {
     if (!nextFile) return;
@@ -63,30 +93,18 @@ export default function ProfilePicturePage() {
         onboarding_status: result.onboarding_status,
         profile_picture: result.profile_picture,
       });
-      if (result.onboarding_status) {
+      
+      // Check if onboarding is completed and auto-login
+      if (result.onboarding_status === "completed") {
+        await exchangeOnboardingTokenForAuth(token);
+        router.replace(Routes.dashboard);
+      } else if (result.onboarding_status) {
         const nextRoute = getOnboardingRoute(result.onboarding_status);
         router.replace(nextRoute);
       }
     } catch (err) {
       const details = interpretServerError(err);
       setError(details[0] || "Could not upload profile picture.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const skip = async () => {
-    setLoading(true);
-    try {
-      const result = await OnboardingService.setProfilePicture(token, new File([], ""));
-      updatePartialUser({ onboarding_status: result.onboarding_status });
-      if (result.onboarding_status) {
-        const nextRoute = getOnboardingRoute(result.onboarding_status);
-        router.replace(nextRoute);
-      }
-    } catch (err) {
-      const details = interpretServerError(err);
-      setError(details[0] || "Could not skip this step. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -137,16 +155,6 @@ export default function ProfilePicturePage() {
         onClick={submit}
         type="button"
       />
-
-      <div style={{ marginTop: "0.75rem" }}>
-        <SubmitButton
-          label="Skip for now"
-          variant="outline"
-          onClick={skip}
-          type="button"
-          disabled={loading}
-        />
-      </div>
     </div>
   );
 }

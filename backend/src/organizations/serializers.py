@@ -340,7 +340,8 @@ class CreateOrJoinFirstHospitalSerializerMixin:
         help_text="Invitation token to join an existing hospital.",
     )
     name = serializers.CharField(
-        required=False,
+        required=True,
+        allow_blank=False,
         max_length=255,
         help_text="Hospital name (required when creating a hospital).",
     )
@@ -386,9 +387,6 @@ class CreateOrJoinFirstHospitalSerializerMixin:
         if invitation_token:
             return data
 
-        if not (data.get("name") or "").strip():
-            raise serializers.ValidationError({"name": "This field is required when creating a new hospital."})
-
         code = (data.get("code") or "").strip()
         if code:
             data["code"] = code.upper()
@@ -398,14 +396,14 @@ class CreateOrJoinFirstHospitalSerializerMixin:
             code = data.get("code")
             if code and Hospital.objects.filter(organization_id=org_id, code=code).exists():
                 raise serializers.ValidationError(
-                    {"code": "Hospital with this code already exists in the organization."}
+                    {"code": ["Hospital with this code already exists in the organization."]}
                 )
 
         if "latitude" in data and data["latitude"] is not None and not (-90 <= data["latitude"] <= 90):
-            raise serializers.ValidationError({"latitude": "Must be between -90 and 90."})
+            raise serializers.ValidationError({"latitude": ["Must be between -90 and 90."]})
 
         if "longitude" in data and data["longitude"] is not None and not (-180 <= data["longitude"] <= 180):
-            raise serializers.ValidationError({"longitude": "Must be between -180 and 180."})
+            raise serializers.ValidationError({"longitude": ["Must be between -180 and 180."]})
 
         return data
 
