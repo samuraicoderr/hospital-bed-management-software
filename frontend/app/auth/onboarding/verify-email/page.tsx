@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import SubmitButton from "../../components/SubmitButton";
 import { MailIcon } from "../../components/AuthComponents";
 import OnboardingService from "@/lib/api/services/Onboarding.Service";
-import { useAuth } from "@/lib/api/auth/authContext";
+import { useAuth, getOnboardingRoute } from "@/lib/api/auth/authContext";
 import { Routes } from "@/lib/api/FrontendRoutes";
 import { interpretServerError } from "@/lib/utils";
 
@@ -86,7 +86,10 @@ export default function VerifyEmailPage() {
     try {
       const result = await OnboardingService.checkEmailOtp({ email, otp });
       updatePartialUser({ is_email_verified: true, onboarding_status: result.onboarding_status });
-      router.replace(Routes.onboardingUsername);
+      if (result.onboarding_status) {
+        const nextRoute = getOnboardingRoute(result.onboarding_status);
+        router.replace(nextRoute);
+      }
     } catch (err) {
       const details = interpretServerError(err);
       setError(details[0] || "Invalid code. Please try again.");

@@ -1,4 +1,5 @@
 import secrets
+import re
 from datetime import timedelta
 
 from django.db import transaction
@@ -168,6 +169,18 @@ class HospitalInvitationService:
 
 class HospitalService:
     @staticmethod
+    def _generate_hospital_code(name: str, organization: Organization) -> str:
+        normalized = re.sub(r"[^A-Z0-9]+", "_", (name or "").upper()).strip("_")
+        base = (normalized or "HOSPITAL")[:40]
+        candidate = base
+        counter = 1
+        while Hospital.objects.filter(organization=organization, code=candidate).exists():
+            suffix = f"_{counter}"
+            candidate = f"{base[: max(1, 50 - len(suffix))]}{suffix}"
+            counter += 1
+        return candidate
+
+    @staticmethod
     def get_hospital_by_id(hospital_id):
         try:
             return Hospital.objects.get(id=hospital_id)
@@ -209,8 +222,18 @@ class HospitalService:
                 },
             )
 
+        create_payload = clean_model_fields(Hospital, hospital_data)
+        provided_code = (create_payload.get("code") or "").strip()
+        if provided_code:
+            create_payload["code"] = provided_code.upper()
+        else:
+            create_payload["code"] = HospitalService._generate_hospital_code(
+                create_payload.get("name", ""),
+                organization,
+            )
+
         hospital = Hospital.objects.create(
-            **clean_model_fields(Hospital, hospital_data),
+            **create_payload,
             organization=organization,
             created_by=user,
         )

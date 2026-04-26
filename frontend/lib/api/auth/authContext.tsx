@@ -47,10 +47,14 @@ export interface ApiErrorType {
 
 export interface PartialUser {
   email?: string;
+  first_name?: string;
+  last_name?: string;
+  username?: string;
+  profile_picture?: string | null;
+  phone?: string;
   is_email_verified?: boolean;
   is_phone_verified?: boolean;
   tfa_token?: string;
-  phone?: string;
   onboarding_token?: string;
   onboarding_status?: OnboardingStatusType;
   onboarding_flow?: string[];

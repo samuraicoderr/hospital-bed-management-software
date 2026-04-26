@@ -155,7 +155,7 @@ class OAuthViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
 	
 		
 		user.advance_onboarding(
-			from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION # skip to NEEDS_PASSWORD since we already have user info
+			from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION 
 		)
 		user.save(
 			update_fields=["onboarding_status"]

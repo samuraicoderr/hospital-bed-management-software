@@ -8,7 +8,7 @@ import SubmitButton from "../components/SubmitButton";
 import AuthDivider from "../components/AuthDivider";
 import OAuthButtons from "../components/OAuthButtons";
 import { EyeIcon, EyeOffIcon } from "../components/AuthComponents";
-import { useAuth } from "@/lib/api/auth/authContext";
+import { useAuth, getOnboardingRoute } from "@/lib/api/auth/authContext";
 import { Routes } from "@/lib/api/FrontendRoutes";
 import { interpretServerError } from "@/lib/utils";
 
@@ -94,7 +94,18 @@ export default function RegisterPage() {
         setOnboardingToken(response.onboarding_token);
       }
 
-      router.replace(Routes.onboardingVerifyEmail);
+      updatePartialUser({
+        onboarding_status: response.onboarding_status,
+        onboarding_flow: response.onboarding_flow,
+        email: response.email,
+        first_name: response.first_name,
+        last_name: response.last_name,
+        username: response.username,
+        profile_picture: response.profile_picture,
+      });
+
+      const nextRoute = getOnboardingRoute(response.onboarding_status);
+      router.replace(nextRoute);
     } catch (err) {
       const serverErrors = interpretServerError(err);
       const fallback = error?.message || "Unable to create account. Please try again.";

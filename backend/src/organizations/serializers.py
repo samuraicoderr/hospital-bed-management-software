@@ -386,26 +386,17 @@ class CreateOrJoinFirstHospitalSerializerMixin:
         if invitation_token:
             return data
 
-        required_for_create = [
-            "name",
-            "code",
-            "address",
-            "city",
-            "state",
-            "postal_code",
-            "phone",
-            "email",
-        ]
-        missing_fields = [field for field in required_for_create if not data.get(field)]
-        if missing_fields:
-            raise serializers.ValidationError(
-                {field: "This field is required when creating a new hospital." for field in missing_fields}
-            )
+        if not (data.get("name") or "").strip():
+            raise serializers.ValidationError({"name": "This field is required when creating a new hospital."})
+
+        code = (data.get("code") or "").strip()
+        if code:
+            data["code"] = code.upper()
 
         if "organization_id" in data:
             org_id = data["organization_id"]
-            code = data["code"]
-            if Hospital.objects.filter(organization_id=org_id, code=code).exists():
+            code = data.get("code")
+            if code and Hospital.objects.filter(organization_id=org_id, code=code).exists():
                 raise serializers.ValidationError(
                     {"code": "Hospital with this code already exists in the organization."}
                 )

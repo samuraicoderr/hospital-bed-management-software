@@ -15,50 +15,57 @@ type StepMeta = {
   subtitle: string;
 };
 
-const STEP_CONFIG: StepMeta[] = [
-  {
+// Static mapping of all possible onboarding steps to their metadata
+const STEP_METADATA: Record<string, StepMeta> = {
+  needs_basic_information: {
     route: Routes.onboardingBasicInfo,
     statusKey: "needs_basic_information",
     title: "Tell us about yourself",
     subtitle: "We just need a few basic details to get started.",
   },
-  {
+  needs_password: {
     route: Routes.onboardingPassword,
     statusKey: "needs_password",
     title: "Create a password",
     subtitle: "Choose a secure password for your account.",
   },
-  {
+  needs_email_verification: {
     route: Routes.onboardingVerifyEmail,
     statusKey: "needs_email_verification",
     title: "Verify your email",
     subtitle: "Enter the 6-digit code we sent to your inbox.",
   },
-  {
+  needs_phone_verification: {
+    route: Routes.onboardingUsername,
+    statusKey: "needs_phone_verification",
+    title: "Verify your phone",
+    subtitle: "Enter the code we sent to your phone.",
+  },
+  needs_profile_username: {
     route: Routes.onboardingUsername,
     statusKey: "needs_profile_username",
     title: "Choose a username",
     subtitle: "This is how other people will find you.",
   },
-  {
+  needs_profile_picture: {
     route: Routes.onboardingProfilePicture,
     statusKey: "needs_profile_picture",
     title: "Add a profile picture",
     subtitle: "A photo helps your profile feel more personal.",
   },
-  {
+  needs_hospital: {
     route: Routes.onboardingHospital,
     statusKey: "needs_hospital",
     title: "Set up your hospital",
     subtitle: "Configure your hospital information to get started.",
   },
-  {
+  completed: {
     route: Routes.onboardingComplete,
     statusKey: "completed",
-    title: "You’re all set",
+    title: "You're all set",
     subtitle: `Welcome to ${appConfig.appName}.`,
   },
-];
+};
 
 export default function OnboardingLayout({
   children,
@@ -71,20 +78,31 @@ export default function OnboardingLayout({
   const hasRedirected = useRef(false);
 
   /**
+   * Build dynamic step config from backend's onboarding_flow
+   */
+  const stepConfig = useMemo(() => {
+    const flow = partialUser?.onboarding_flow || [];
+    // Filter flow to only include steps we have metadata for
+    const validSteps = flow.filter((status) => STEP_METADATA[status]);
+    // Map status keys to step metadata
+    return validSteps.map((status) => STEP_METADATA[status]);
+  }, [partialUser?.onboarding_flow]);
+
+  /**
    * Determine active step from backend status
    */
   const activeStepIndex = useMemo(() => {
     if (!partialUser?.onboarding_status) return 0;
 
-    const index = STEP_CONFIG.findIndex(
+    const index = stepConfig.findIndex(
       (step) => step.statusKey === partialUser.onboarding_status
     );
 
     return index >= 0 ? index : 0;
-  }, [partialUser]);
+  }, [partialUser, stepConfig]);
 
-  const totalSteps = STEP_CONFIG.length;
-  const activeStep = STEP_CONFIG[activeStepIndex];
+  const totalSteps = stepConfig.length;
+  const activeStep = stepConfig[activeStepIndex];
 
   /**
    * Smart Redirect & Guard
@@ -140,6 +158,19 @@ export default function OnboardingLayout({
     );
   }
 
+  /**
+   * Handle navigation to a specific step
+   */
+  const handleStepClick = (stepIndex: number) => {
+    // Only allow navigation to previous steps or current step
+    if (stepIndex <= activeStepIndex) {
+      const targetStep = stepConfig[stepIndex];
+      if (targetStep) {
+        router.replace(targetStep.route);
+      }
+    }
+  };
+
   return (
     <div
       className="max-w-xl mx-auto px-4 py-10"
@@ -148,6 +179,8 @@ export default function OnboardingLayout({
       <OnboardingProgress
         currentStep={activeStepIndex}
         totalSteps={totalSteps}
+        steps={stepConfig}
+        onStepClick={handleStepClick}
       />
 
       <header className="mt-8 mb-6">

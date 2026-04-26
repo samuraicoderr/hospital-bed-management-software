@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 # HELPERS
 # ─────────────────────────────────────────────
 
+
 def generate_random_secret() -> str:
     """Generate a cryptographically random base32 TOTP secret."""
     return pyotp.random_base32(32)
@@ -140,7 +141,19 @@ class OnboardingMixin:
     OnboardingStatus = OnboardingStatus
 
     def get_onboarding_flow(self) -> list:
-        return self.ONBOARDING_FLOW
+        flow = self.ONBOARDING_FLOW.copy()
+        if self.is_email_verified:
+            flow.remove(OnboardingStatus.NEEDS_EMAIL_VERIFICATION)
+        if self.social_auth.exists():
+            # Social users skip password step
+            return [
+                step for step in flow
+                if step not in (OnboardingStatus.NEEDS_EMAIL_VERIFICATION,)
+            ]
+        return [
+            step for step in flow
+            if step not in (OnboardingStatus.NEEDS_PASSWORD,)
+        ]
 
     def get_next_onboarding_step(self, from_step=None):
         flow = self.get_onboarding_flow()
@@ -176,43 +189,75 @@ class OnboardingMixin:
 
     def advance_onboarding(self, from_step=None, strict: bool = False):
         """
-        Move to next onboarding step.
+        Advance onboarding by exactly one logical step.
+
+        Rules:
+        - If from_step is in the past → no-op (idempotent).
+        - If from_step == current step → advance one step.
+        - If from_step is in the future:
+            - strict=True → raise ValidationError
+            - strict=False → treat as advancing from current step.
+        - Never skips steps.
         
-        WARNING: This method must be called inside a DB transaction with
-        select_for_update() to avoid race conditions. Example:
-        
-            with transaction.atomic():
-                user = User.objects.select_for_update().get(pk=user.pk)
-                user.advance_onboarding(from_step=...)
+        MUST be called inside select_for_update() transaction.
         """
+
         flow = self.get_onboarding_flow()
-        next_step = self.get_next_onboarding_step(from_step=from_step)
 
-        if strict and from_step != self.onboarding_status:
-            raise ValidationError("This onboarding step is either in the past or future.")
+        # If no flow or already completed
+        if not flow or self.onboarding_status == OnboardingStatus.COMPLETED:
+            return self.onboarding_status
 
-        if from_step is not None:
-            if from_step not in flow:
-                raise ValidationError({
-                    "error": f"Step '{from_step}' is not valid for this user type.",
-                    # Do NOT leak the full internal flow to the client.
-                })
+        # Ensure current status is valid
+        _must_save = False
+        if self.onboarding_status not in flow:
+            self.onboarding_status = flow[0]
+            _must_save = True
+            # self.save(update_fields=["onboarding_status"])  # too many db calls man :)
 
-            from_step_index = flow.index(from_step)
-            current_index = flow.index(self.onboarding_status)
+        current_step = self.onboarding_status
+        current_index = flow.index(current_step)
 
-            if from_step_index < current_index:
-                # this means we have already advanced beyond this step, advancing from `from_step` might take us backwards
-                # This happends if user redoes an already completed step.
-                next_step = self.onboarding_status
-            # elif from_step_index > current_index:
-            #     # This is unlikely but it does mean that current_step has not been fully completed
-            #     next_step = self.onboarding_status
+        # Default from_step to current
+        if from_step is None:
+            from_step = current_step
 
-        if next_step and next_step != self.onboarding_status:
+        if from_step not in flow:
+            # raise ValidationError({
+            #     "error": f"Step '{from_step}' is not valid for this user type."
+            # })
+            from_step = current_step  # Treat as if from current step for robustness
+
+        from_index = flow.index(from_step)
+
+        # ---- Core Logic ----
+
+        # Case 1: from_step is in the past → no-op (idempotent)
+        if from_index < current_index:
+            return current_step
+
+        # Case 2: from_step is in the future
+        if from_index > current_index:
+            if strict:
+                raise ValidationError(
+                    "Cannot advance from a future onboarding step."
+                )
+            # Treat as advancing from current step instead
+            from_index = current_index
+
+        # Case 3: advance exactly one step from from_index
+        next_index = from_index + 1
+
+        if next_index >= len(flow):
+            return current_step  # Already at last step
+
+        next_step = flow[next_index]
+
+        # Prevent unnecessary writes
+        if next_step != current_step or _must_save:
             self.onboarding_status = next_step
             self.save(update_fields=["onboarding_status"])
-            return next_step
+
         return self.onboarding_status
 
     def remaining_onboarding_steps(self) -> list:

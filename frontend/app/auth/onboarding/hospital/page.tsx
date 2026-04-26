@@ -5,13 +5,22 @@ import { useRouter } from "next/navigation";
 import AuthInput from "../../components/AuthInput";
 import SubmitButton from "../../components/SubmitButton";
 import OnboardingService from "@/lib/api/services/Onboarding.Service";
-import { useAuth } from "@/lib/api/auth/authContext";
+import { useAuth, getOnboardingRoute } from "@/lib/api/auth/authContext";
 import { Routes } from "@/lib/api/FrontendRoutes";
 import { interpretServerError } from "@/lib/utils";
 
 const HOSPITAL_CODE_RE = /^[A-Z0-9_]+$/;
 
 type Mode = "create" | "join";
+
+function generateHospitalCode(name: string): string {
+  const normalized = name
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40);
+  return normalized || "HOSPITAL";
+}
 
 export default function HospitalPage() {
   const router = useRouter();
@@ -21,6 +30,7 @@ export default function HospitalPage() {
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [codeTouched, setCodeTouched] = useState(false);
   const [hospitalType, setHospitalType] = useState("general");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -30,10 +40,6 @@ export default function HospitalPage() {
   const [email, setEmail] = useState("");
   const [licenseNumber, setLicenseNumber] = useState("");
   const [taxId, setTaxId] = useState("");
-  const [website, setWebsite] = useState("");
-  const [totalBeds, setTotalBeds] = useState("0");
-  const [icuBeds, setIcuBeds] = useState("0");
-  const [emergencyBeds, setEmergencyBeds] = useState("0");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,15 +84,15 @@ export default function HospitalPage() {
       return;
     }
 
-    if (!name.trim() || !code.trim() || !address.trim() || !city.trim() || !state.trim() || !postalCode.trim() || !phone.trim() || !email.trim()) {
-      setError("Please fill in all required fields.");
+    if (!name.trim()) {
+      setError("Hospital name is required.");
       return;
     }
-    if (!HOSPITAL_CODE_RE.test(code)) {
+    if (code.trim() && !HOSPITAL_CODE_RE.test(code)) {
       setError("Hospital code must contain only uppercase letters, numbers, and underscores.");
       return;
     }
-    if (!email.includes("@")) {
+    if (email.trim() && !email.includes("@")) {
       setError("Please enter a valid email address.");
       return;
     }
@@ -96,23 +102,22 @@ export default function HospitalPage() {
       const result = await OnboardingService.createOrJoinFirstHospital({
         onboarding_token: token,
         name: name.trim(),
-        code: code.trim().toUpperCase(),
+        code: code.trim() ? code.trim().toUpperCase() : undefined,
         hospital_type: hospitalType,
         license_number: licenseNumber.trim() || undefined,
         tax_id: taxId.trim() || undefined,
-        address: address.trim(),
-        city: city.trim(),
-        state: state.trim(),
-        postal_code: postalCode.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
-        website: website.trim() || undefined,
-        total_beds: parseInt(totalBeds, 10) || 0,
-        icu_beds: parseInt(icuBeds, 10) || 0,
-        emergency_beds: parseInt(emergencyBeds, 10) || 0,
+        address: address.trim() || undefined,
+        city: city.trim() || undefined,
+        state: state.trim() || undefined,
+        postal_code: postalCode.trim() || undefined,
+        phone: phone.trim() || undefined,
+        email: email.trim() || undefined,
       });
       updatePartialUser({ onboarding_status: result.onboarding_status });
-      router.replace(Routes.onboardingComplete);
+      if (result.onboarding_status) {
+        const nextRoute = getOnboardingRoute(result.onboarding_status);
+        router.replace(nextRoute);
+      }
     } catch (err) {
       const details = interpretServerError(err);
       setError(details[0] || "Could not create hospital.");
@@ -176,8 +181,32 @@ export default function HospitalPage() {
               Hospital Information
             </h3>
 
-            <AuthInput id="hospital-name" label="Hospital name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Enter hospital name" required disabled={loading} />
-            <AuthInput id="hospital-code" label="Hospital code" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="HOSPITAL_CODE" required disabled={loading} />
+            <AuthInput
+              id="hospital-name"
+              label="Hospital name"
+              value={name}
+              onChange={(e) => {
+                const nextName = e.target.value;
+                setName(nextName);
+                if (!codeTouched) {
+                  setCode(generateHospitalCode(nextName));
+                }
+              }}
+              placeholder="Enter hospital name"
+              required
+              disabled={loading}
+            />
+            <AuthInput
+              id="hospital-code"
+              label="Hospital code (optional)"
+              value={code}
+              onChange={(e) => {
+                setCodeTouched(true);
+                setCode(e.target.value.toUpperCase());
+              }}
+              placeholder="Auto-generated from hospital name"
+              disabled={loading}
+            />
 
             <div style={{ marginBottom: "1rem" }}>
               <label htmlFor="hospital-type" className="auth-label">Hospital type</label>
@@ -191,25 +220,14 @@ export default function HospitalPage() {
               </select>
             </div>
 
-            <AuthInput id="address" label="Address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" required disabled={loading} />
+            <AuthInput id="address" label="Address (optional)" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Street address" disabled={loading} />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-              <AuthInput id="city" label="City" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" required disabled={loading} />
-              <AuthInput id="state" label="State/Province" value={state} onChange={(e) => setState(e.target.value)} placeholder="State" required disabled={loading} />
+              <AuthInput id="city" label="City (optional)" value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" disabled={loading} />
+              <AuthInput id="state" label="State/Province (optional)" value={state} onChange={(e) => setState(e.target.value)} placeholder="State" disabled={loading} />
             </div>
-            <AuthInput id="postal-code" label="Postal/ZIP code" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Postal code" required disabled={loading} />
-            <AuthInput id="phone" label="Phone number" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" required disabled={loading} />
-            <AuthInput id="email" label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hospital@example.com" required disabled={loading} />
-            <AuthInput id="website" label="Website (optional)" type="url" value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://hospital.com" disabled={loading} />
-
-            <h3 className="auth-subheading" style={{ marginBottom: "1rem", marginTop: "1.5rem", textAlign: "center" }}>
-              Capacity (optional)
-            </h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
-              <AuthInput id="total-beds" label="Total beds" type="number" value={totalBeds} onChange={(e) => setTotalBeds(e.target.value)} placeholder="0" min="0" disabled={loading} />
-              <AuthInput id="icu-beds" label="ICU beds" type="number" value={icuBeds} onChange={(e) => setIcuBeds(e.target.value)} placeholder="0" min="0" disabled={loading} />
-              <AuthInput id="emergency-beds" label="Emergency beds" type="number" value={emergencyBeds} onChange={(e) => setEmergencyBeds(e.target.value)} placeholder="0" min="0" disabled={loading} />
-            </div>
-
+            <AuthInput id="postal-code" label="Postal/ZIP code (optional)" value={postalCode} onChange={(e) => setPostalCode(e.target.value)} placeholder="Postal code" disabled={loading} />
+            <AuthInput id="phone" label="Phone number (optional)" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 000-0000" disabled={loading} />
+            <AuthInput id="email" label="Email (optional)" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="hospital@example.com" disabled={loading} />
             <div style={{ marginTop: "1.25rem" }}>
               <SubmitButton label="Create Hospital" loading={loading} disabled={loading} />
             </div>

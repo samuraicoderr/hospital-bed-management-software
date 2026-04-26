@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import AuthInput from "../../components/AuthInput";
 import SubmitButton from "../../components/SubmitButton";
 import OnboardingService from "@/lib/api/services/Onboarding.Service";
-import { useAuth } from "@/lib/api/auth/authContext";
+import { useAuth, getOnboardingRoute } from "@/lib/api/auth/authContext";
 import { Routes } from "@/lib/api/FrontendRoutes";
 import { interpretServerError } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ export default function UsernamePage() {
   const router = useRouter();
   const { onboardingToken, partialUser, updatePartialUser } = useAuth();
 
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(partialUser?.username || "");
   const [checking, setChecking] = useState(false);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
@@ -71,11 +71,34 @@ export default function UsernamePage() {
         onboarding_token: token,
         new_username: username,
       });
-      updatePartialUser({ onboarding_status: result.onboarding_status });
-      router.replace(Routes.onboardingProfilePicture);
+      updatePartialUser({ onboarding_status: result.onboarding_status, username });
+      if (result.onboarding_status) {
+        const nextRoute = getOnboardingRoute(result.onboarding_status);
+        router.replace(nextRoute);
+      }
     } catch (err) {
       const details = interpretServerError(err);
       setError(details[0] || "Could not save username. Please try another one.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const skip = async () => {
+    setLoading(true);
+    try {
+      const result = await OnboardingService.setUsername({
+        onboarding_token: token,
+        new_username: partialUser?.username || "",
+      });
+      updatePartialUser({ onboarding_status: result.onboarding_status });
+      if (result.onboarding_status) {
+        const nextRoute = getOnboardingRoute(result.onboarding_status);
+        router.replace(nextRoute);
+      }
+    } catch (err) {
+      const details = interpretServerError(err);
+      setError(details[0] || "Could not skip this step. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -112,12 +135,22 @@ export default function UsernamePage() {
 
         {statusText && <div className={statusClass}>{statusText}</div>}
 
-        <div style={{ marginTop: "1.25rem" }}>
-          <SubmitButton
-            label="Continue"
-            loading={loading}
-            disabled={loading || available === false || !username}
-          />
+        <div style={{ marginTop: "1.25rem" }} className="flex gap-3">
+          <div className="flex-1">
+            <SubmitButton
+              label="Continue"
+              loading={loading}
+              disabled={loading || available === false || !username}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={skip}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Skip
+          </button>
         </div>
       </form>
     </div>

@@ -332,8 +332,8 @@ class Onboarding:
     try:
         from src.organizations.serializers import CreateOrJoinFirstHospitalSerializerMixin
         class CreateHospitalSerializer(
-            UseOnboardingTokenSerializer,
             CreateOrJoinFirstHospitalSerializerMixin,
+            UseOnboardingTokenSerializer,
             serializers.Serializer
         ):
             pass

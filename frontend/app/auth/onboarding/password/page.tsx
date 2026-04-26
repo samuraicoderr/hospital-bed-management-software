@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import AuthInput from "../../components/AuthInput";
 import SubmitButton from "../../components/SubmitButton";
 import OnboardingService from "@/lib/api/services/Onboarding.Service";
-import { useAuth } from "@/lib/api/auth/authContext";
+import { useAuth, getOnboardingRoute } from "@/lib/api/auth/authContext";
 import { Routes } from "@/lib/api/FrontendRoutes";
 import { interpretServerError } from "@/lib/utils";
 
@@ -57,7 +57,10 @@ export default function PasswordPage() {
         password,
       });
       updatePartialUser({ onboarding_status: result.onboarding_status });
-      router.replace(Routes.onboardingVerifyEmail);
+      if (result.onboarding_status) {
+        const nextRoute = getOnboardingRoute(result.onboarding_status);
+        router.replace(nextRoute);
+      }
     } catch (err) {
       const details = interpretServerError(err);
       setError(details[0] || "Could not set password. Please try again.");
@@ -68,6 +71,26 @@ export default function PasswordPage() {
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
+  };
+
+  const skip = async () => {
+    setLoading(true);
+    try {
+      const result = await OnboardingService.setPassword({
+        onboarding_token: token,
+        password: "", // Backend will handle default
+      });
+      updatePartialUser({ onboarding_status: result.onboarding_status });
+      if (result.onboarding_status) {
+        const nextRoute = getOnboardingRoute(result.onboarding_status);
+        router.replace(nextRoute);
+      }
+    } catch (err) {
+      const details = interpretServerError(err);
+      setError(details[0] || "Could not skip this step. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleConfirmPasswordVisibility = () => {
@@ -125,12 +148,22 @@ export default function PasswordPage() {
           }
         />
 
-        <div style={{ marginTop: "1.25rem" }}>
-          <SubmitButton
-            label="Continue"
-            loading={loading}
-            disabled={loading || !password || !confirmPassword}
-          />
+        <div style={{ marginTop: "1.25rem" }} className="flex gap-3">
+          <div className="flex-1">
+            <SubmitButton
+              label="Continue"
+              loading={loading}
+              disabled={loading || !password || !confirmPassword}
+            />
+          </div>
+          <button
+            type="button"
+            onClick={skip}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Skip
+          </button>
         </div>
       </form>
     </div>

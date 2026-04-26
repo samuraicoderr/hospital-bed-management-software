@@ -298,11 +298,8 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
             user.set_password(raw_password)
             user.save()
             # Advance from NEEDS_BASIC_INFORMATION → NEEDS_EMAIL_VERIFICATION
-            # user.advance_onboarding(
-            #     from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION
-            # )
             user.advance_onboarding(
-                from_step=User.OnboardingStatus.NEEDS_PASSWORD,  # skip the password step since we already have the password at registration
+                from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION
             )
 
         try:
@@ -581,15 +578,15 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
             user = User.objects.select_for_update().get(pk=user.pk)
             user.first_name = serializer.validated_data["first_name"]
             user.last_name = serializer.validated_data["last_name"]
-            user.set_password(serializer.validated_data["password"])
-            user.save()
-            if user.is_email_verified:
-                # skip email verification step if email is already verified (e.g. from OAuth signup)s
-                user.advance_onboarding(from_step=User.OnboardingStatus.NEEDS_EMAIL_VERIFICATION)
-            else:
-                user.advance_onboarding(
-                    from_step=User.OnboardingStatus.NEEDS_PASSWORD  # skip the password step since we've just done that -> NEEDS_EMAIL_VERIFICATION
-                )
+            password = serializer.validated_data.get("password")
+            if password:
+                user.set_password(password)
+            user.save(
+                update_fields=["first_name", "last_name", "password"]
+            )
+            user.advance_onboarding(
+                from_step=User.OnboardingStatus.NEEDS_BASIC_INFORMATION
+            )
 
         return Response(
             CreateUserSerializer(user, context={"request": request}).data,
@@ -623,13 +620,15 @@ class AuthRouterViewSet(ViewSetHelperMixin, viewsets.GenericViewSet):
 
         with transaction.atomic():
             user = User.objects.select_for_update().get(pk=user.pk)
-            user.set_password(serializer.validated_data["password"])
-            user.save(
-                update_fields=["password"]
-            )
-            user.advance_onboarding(
-                from_step=User.OnboardingStatus.NEEDS_EMAIL_VERIFICATION  # -> NEEDS_PROFILE_USERNAME
-            )
+            password = serializer.validated_data["password"]
+            if password:
+                user.set_password(password)
+                user.save(
+                    update_fields=["password"]
+                )
+                user.advance_onboarding(
+                    from_step=User.OnboardingStatus.NEEDS_PASSWORD
+                )
 
         return Response(
             CreateUserSerializer(user, context={"request": request}).data,

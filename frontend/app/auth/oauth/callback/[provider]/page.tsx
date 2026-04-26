@@ -115,6 +115,11 @@ function OAuthCallbackPageContent() {
           onboarding_status: response.onboarding_status,
           onboarding_flow: response.onboarding_flow,
           onboarding_token: response.onboarding_token,
+          email: response.user?.email,
+          first_name: response.user?.first_name,
+          last_name: response.user?.last_name,
+          username: response.user?.username,
+          profile_picture: response.user?.profile_picture,
         });
 
         const onboardingRoute = getOnboardingRoute(response.onboarding_status);

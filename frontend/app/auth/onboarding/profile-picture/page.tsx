@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import SubmitButton from "../../components/SubmitButton";
 import { UploadIcon } from "../../components/AuthComponents";
 import OnboardingService from "@/lib/api/services/Onboarding.Service";
-import { useAuth } from "@/lib/api/auth/authContext";
+import { useAuth, getOnboardingRoute } from "@/lib/api/auth/authContext";
 import { Routes } from "@/lib/api/FrontendRoutes";
 import { interpretServerError } from "@/lib/utils";
 
@@ -15,7 +15,7 @@ export default function ProfilePicturePage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<string | null>(partialUser?.profile_picture || null);
   const [dragActive, setDragActive] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,6 +23,12 @@ export default function ProfilePicturePage() {
   const token = useMemo(() => {
     return onboardingToken || partialUser?.onboarding_token || "";
   }, [onboardingToken, partialUser?.onboarding_token]);
+
+  useEffect(() => {
+    if (partialUser?.profile_picture) {
+      setPreview(partialUser.profile_picture);
+    }
+  }, [partialUser?.profile_picture]);
 
   const onFile = (nextFile: File | null) => {
     if (!nextFile) return;
@@ -55,8 +61,12 @@ export default function ProfilePicturePage() {
       const result = await OnboardingService.setProfilePicture(token, file);
       updatePartialUser({
         onboarding_status: result.onboarding_status,
+        profile_picture: result.profile_picture,
       });
-      router.replace(Routes.onboardingHospital);
+      if (result.onboarding_status) {
+        const nextRoute = getOnboardingRoute(result.onboarding_status);
+        router.replace(nextRoute);
+      }
     } catch (err) {
       const details = interpretServerError(err);
       setError(details[0] || "Could not upload profile picture.");
@@ -65,8 +75,21 @@ export default function ProfilePicturePage() {
     }
   };
 
-  const skip = () => {
-    router.replace(Routes.onboardingHospital);
+  const skip = async () => {
+    setLoading(true);
+    try {
+      const result = await OnboardingService.setProfilePicture(token, new File([], ""));
+      updatePartialUser({ onboarding_status: result.onboarding_status });
+      if (result.onboarding_status) {
+        const nextRoute = getOnboardingRoute(result.onboarding_status);
+        router.replace(nextRoute);
+      }
+    } catch (err) {
+      const details = interpretServerError(err);
+      setError(details[0] || "Could not skip this step. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
