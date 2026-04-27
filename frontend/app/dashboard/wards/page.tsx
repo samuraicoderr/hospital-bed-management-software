@@ -12,10 +12,7 @@ import {
   X,
 } from "lucide-react";
 
-import LoadingScreen from "../../components/loading/LoadingScreen";
-import Sidebar from "../../components/layout/Sidebar";
-import TopHeader from "../../components/layout/TopHeader";
-import { ProtectedRoute } from "@/lib/api/auth/authContext";
+import { useHospital, useWard } from "@/lib/api/contexts";
 import { organizationService } from "@/lib/api/services";
 import type {
   CreateWardRequest,
@@ -118,60 +115,37 @@ function CheckboxField({
 }
 
 export default function WardsPage() {
-  const [wards, setWards] = useState<Ward[]>([]);
+  const { hospital } = useHospital();
+  const { wards, isLoading, createWard, updateWard, deleteWard } = useWard();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isBusy, setIsBusy] = useState(false);
 
-  // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedWard, setSelectedWard] = useState<Ward | null>(null);
-
-  // Form states
   const [createForm, setCreateForm] = useState<CreateWardRequest>(emptyCreateForm);
   const [editForm, setEditForm] = useState<Partial<CreateWardRequest>>({});
   const [formError, setFormError] = useState("");
 
   const loadDepartments = useCallback(async () => {
+    if (!hospital) return;
     try {
-      const response = await organizationService.getHospitals();
-      if (response.results && response.results.length > 0) {
-        const hospitalId = response.results[0].id;
-        const depts = await organizationService.getDepartments(hospitalId);
-        setDepartments(depts);
-        if (depts.length > 0 && !selectedDepartment) {
-          setSelectedDepartment(depts[0].id);
-        }
+      const depts = await organizationService.getDepartments(hospital.id);
+      setDepartments(depts);
+      if (depts.length > 0 && !selectedDepartment) {
+        setSelectedDepartment(depts[0].id);
       }
     } catch (err) {
       console.error("Failed to load departments:", err);
     }
-  }, [selectedDepartment]);
-
-  const loadWards = useCallback(async () => {
-    if (!selectedDepartment) return;
-    setIsLoading(true);
-    try {
-      const w = await organizationService.getWards(selectedDepartment);
-      setWards(w);
-    } catch (err) {
-      console.error("Failed to load wards:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [selectedDepartment]);
+  }, [hospital, selectedDepartment]);
 
   useEffect(() => {
     loadDepartments();
   }, [loadDepartments]);
-
-  useEffect(() => {
-    loadWards();
-  }, [loadWards]);
 
   const filteredWards = useMemo(() => {
     if (!searchQuery) return wards;
@@ -187,20 +161,19 @@ export default function WardsPage() {
 
   const handleCreateWard = async () => {
     setFormError("");
-    if (!createForm.name || !createForm.code || !createForm.department) {
+    if (!createForm.name || !createForm.code || !selectedDepartment) {
       setFormError("Name, code, and department are required.");
       return;
     }
 
     setIsBusy(true);
     try {
-      await organizationService.createWard({
+      await createWard({
         ...createForm,
         department: selectedDepartment,
       });
       setShowCreateModal(false);
       setCreateForm(emptyCreateForm);
-      await loadWards();
     } catch (err) {
       const details = interpretServerError(err);
       setFormError(details[0] || "Failed to create ward.");
@@ -214,11 +187,10 @@ export default function WardsPage() {
     setFormError("");
     setIsBusy(true);
     try {
-      await organizationService.updateWard(selectedWard.id, editForm);
+      await updateWard(selectedWard.id, editForm);
       setShowEditModal(false);
       setSelectedWard(null);
       setEditForm({});
-      await loadWards();
     } catch (err) {
       const details = interpretServerError(err);
       setFormError(details[0] || "Failed to update ward.");
@@ -231,10 +203,9 @@ export default function WardsPage() {
     if (!selectedWard) return;
     setIsBusy(true);
     try {
-      await organizationService.deleteWard(selectedWard.id);
+      await deleteWard(selectedWard.id);
       setShowDeleteModal(false);
       setSelectedWard(null);
-      await loadWards();
     } catch (err) {
       const details = interpretServerError(err);
       setFormError(details[0] || "Failed to delete ward.");
@@ -264,107 +235,95 @@ export default function WardsPage() {
   };
 
   if (isLoading) {
-    return (
-      <ProtectedRoute>
-        <LoadingScreen />
-      </ProtectedRoute>
-    );
+    return <div className="p-6">Loading...</div>;
   }
 
   return (
-    <ProtectedRoute>
-      <div className="flex min-h-screen bg-slate-50">
-        <Sidebar />
-        <div className="flex-1">
-          <TopHeader title="Wards" />
-          <main className="p-6">
-            <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Search wards..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-64 rounded-lg border border-slate-300 pl-10 pr-4 py-2 text-sm outline-none focus:border-emerald-600"
-                  />
-                </div>
-                <select
-                  value={selectedDepartment}
-                  onChange={(e) => setSelectedDepartment(e.target.value)}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm outline-none focus:border-emerald-600"
-                >
-                  <option value="">Select Department</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <button
-                onClick={() => {
-                  setCreateForm({ ...emptyCreateForm, department: selectedDepartment });
-                  setShowCreateModal(true);
-                }}
-                disabled={!selectedDepartment}
-                className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Plus className="h-4 w-4" />
-                New Ward
-              </button>
-            </div>
-
-            <div className="rounded-lg border border-slate-200 bg-white">
-              <div className="grid grid-cols-12 border-b border-slate-200 bg-slate-50 px-6 py-3 text-xs font-medium text-slate-600 uppercase">
-                <div className="col-span-3">Name</div>
-                <div className="col-span-2">Code</div>
-                <div className="col-span-2">Room</div>
-                <div className="col-span-2">Type</div>
-                <div className="col-span-2">Capacity</div>
-                <div className="col-span-1 text-right">Actions</div>
-              </div>
-              {filteredWards.length === 0 ? (
-                <div className="px-6 py-12 text-center text-sm text-slate-500">
-                  {searchQuery ? "No wards match your search." : "No wards found. Create one to get started."}
-                </div>
-              ) : (
-                filteredWards.map((ward) => (
-                  <div
-                    key={ward.id}
-                    className="grid grid-cols-12 border-b border-slate-100 px-6 py-4 text-sm hover:bg-slate-50"
-                  >
-                    <div className="col-span-3 font-medium text-slate-900">{ward.name}</div>
-                    <div className="col-span-2 text-slate-600">{ward.code}</div>
-                    <div className="col-span-2 text-slate-600">{ward.room_number}</div>
-                    <div className="col-span-2 text-slate-600">{formatWardType(ward.ward_type)}</div>
-                    <div className="col-span-2 text-slate-600">{ward.capacity}</div>
-                    <div className="col-span-1 flex justify-end gap-2">
-                      <button
-                        onClick={() => openEditModal(ward)}
-                        className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                        title="Edit"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedWard(ward);
-                          setShowDeleteModal(true);
-                        }}
-                        className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
-                        title="Delete"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </main>
+    <div className="p-6">
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search wards..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64 rounded-lg border border-slate-300 pl-10 pr-4 py-2 text-sm outline-none focus:border-emerald-600"
+            />
+          </div>
+          <select
+            value={selectedDepartment}
+            onChange={(e) => setSelectedDepartment(e.target.value)}
+            className="rounded-lg border border-slate-300 px-4 py-2 text-sm outline-none focus:border-emerald-600"
+          >
+            <option value="">Select Department</option>
+            {departments.map((dept) => (
+              <option key={dept.id} value={dept.id}>
+                {dept.name}
+              </option>
+            ))}
+          </select>
         </div>
+        <button
+          onClick={() => {
+            setCreateForm({ ...emptyCreateForm, department: selectedDepartment });
+            setShowCreateModal(true);
+          }}
+          disabled={!selectedDepartment}
+          className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Plus className="h-4 w-4" />
+          New Ward
+        </button>
+      </div>
+
+      <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="grid grid-cols-12 border-b border-slate-200 bg-slate-50 px-6 py-3 text-xs font-medium text-slate-600 uppercase">
+          <div className="col-span-3">Name</div>
+          <div className="col-span-2">Code</div>
+          <div className="col-span-2">Room</div>
+          <div className="col-span-2">Type</div>
+          <div className="col-span-2">Capacity</div>
+          <div className="col-span-1 text-right">Actions</div>
+        </div>
+        {filteredWards.length === 0 ? (
+          <div className="px-6 py-12 text-center text-sm text-slate-500">
+            {searchQuery ? "No wards match your search." : "No wards found. Create one to get started."}
+          </div>
+        ) : (
+          filteredWards.map((ward) => (
+            <div
+              key={ward.id}
+              className="grid grid-cols-12 border-b border-slate-100 px-6 py-4 text-sm hover:bg-slate-50"
+            >
+              <div className="col-span-3 font-medium text-slate-900">{ward.name}</div>
+              <div className="col-span-2 text-slate-600">{ward.code}</div>
+              <div className="col-span-2 text-slate-600">{ward.room_number}</div>
+              <div className="col-span-2 text-slate-600">{formatWardType(ward.ward_type)}</div>
+              <div className="col-span-2 text-slate-600">{ward.capacity}</div>
+              <div className="col-span-1 flex justify-end gap-2">
+                <button
+                  onClick={() => openEditModal(ward)}
+                  className="rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  title="Edit"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedWard(ward);
+                    setShowDeleteModal(true);
+                  }}
+                  className="rounded p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-600"
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {showCreateModal ? (
@@ -429,44 +388,46 @@ export default function WardsPage() {
               <div className="grid grid-cols-2 gap-3">
                 <CheckboxField
                   label="Has Bathroom"
-                  checked={createForm.has_bathroom}
+                  checked={createForm.has_bathroom || false}
                   onChange={(checked) => setCreateForm((c) => ({ ...c, has_bathroom: checked }))}
                 />
                 <CheckboxField
                   label="Has Oxygen"
-                  checked={createForm.has_oxygen}
+                  checked={createForm.has_oxygen || false}
                   onChange={(checked) => setCreateForm((c) => ({ ...c, has_oxygen: checked }))}
                 />
                 <CheckboxField
                   label="Has Suction"
-                  checked={createForm.has_suction}
+                  checked={createForm.has_suction || false}
                   onChange={(checked) => setCreateForm((c) => ({ ...c, has_suction: checked }))}
                 />
                 <CheckboxField
                   label="Has Monitor"
-                  checked={createForm.has_monitor}
+                  checked={createForm.has_monitor || false}
                   onChange={(checked) => setCreateForm((c) => ({ ...c, has_monitor: checked }))}
                 />
                 <CheckboxField
                   label="Has Ventilator"
-                  checked={createForm.has_ventilator}
+                  checked={createForm.has_ventilator || false}
                   onChange={(checked) => setCreateForm((c) => ({ ...c, has_ventilator: checked }))}
                 />
                 <CheckboxField
                   label="Isolation Capable"
-                  checked={createForm.is_isolation_capable}
+                  checked={createForm.is_isolation_capable || false}
                   onChange={(checked) => setCreateForm((c) => ({ ...c, is_isolation_capable: checked }))}
                 />
               </div>
             </div>
-            <Field label="Description" className="md:col-span-2">
-              <textarea
-                value={createForm.description}
-                onChange={(e) => setCreateForm((c) => ({ ...c, description: e.target.value }))}
-                className="min-h-[80px] rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
-                placeholder="Ward description..."
-              />
-            </Field>
+            <div className="md:col-span-2">
+              <Field label="Description">
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm((c) => ({ ...c, description: e.target.value }))}
+                  className="min-h-[80px] rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
+                  placeholder="Ward description..."
+                />
+              </Field>
+            </div>
           </div>
           {formError && <div className="mt-4 text-sm text-rose-600">{formError}</div>}
           <div className="mt-5 flex justify-end gap-3">
@@ -572,13 +533,15 @@ export default function WardsPage() {
                 />
               </div>
             </div>
-            <Field label="Description" className="md:col-span-2">
-              <textarea
-                value={editForm.description || ""}
-                onChange={(e) => setEditForm((c) => ({ ...c, description: e.target.value }))}
-                className="min-h-[80px] rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
-              />
-            </Field>
+            <div className="md:col-span-2">
+              <Field label="Description">
+                <textarea
+                  value={editForm.description || ""}
+                  onChange={(e) => setEditForm((c) => ({ ...c, description: e.target.value }))}
+                  className="min-h-[80px] rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
+                />
+              </Field>
+            </div>
           </div>
           {formError && <div className="mt-4 text-sm text-rose-600">{formError}</div>}
           <div className="mt-5 flex justify-end gap-3">
@@ -625,6 +588,6 @@ export default function WardsPage() {
           <span>Updating wards...</span>
         </div>
       ) : null}
-    </ProtectedRoute>
+    </div>
   );
 }

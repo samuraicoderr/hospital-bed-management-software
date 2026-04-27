@@ -1,86 +1,63 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import LoadingScreen from "../components/loading/LoadingScreen";
 import Sidebar from "../components/layout/Sidebar";
 import TopHeader from "../components/layout/TopHeader";
-import { ProtectedRoute, useAuth } from "@/lib/api/auth/authContext";
-import { dashboardService, bedService, organizationService } from "@/lib/api/services";
-import { BedStatistics, KPIData, Hospital } from "@/lib/api/types";
-import {
-  Bed,
-  Users,
-  Sparkles,
-  Clock,
-  AlertTriangle,
-  TrendingUp,
-  Activity,
-  HeartPulse,
-  CheckCircle,
-  ArrowRight,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import FrontendRoutes from "@/lib/api/FrontendRoutes";
-
-interface KPICardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  color: string;
-  trend?: { value: number; label: string; direction: "up" | "down" | "neutral" };
-  onClick?: () => void;
-}
+import { ProtectedRoute } from "@/lib/api/auth/authContext";
+import { OrganizationProvider, HospitalProvider, DepartmentProvider, WardProvider } from "@/lib/api/contexts";
+import { useHospital } from "@/lib/api/contexts/HospitalContext";
 
 export default function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const router = useRouter();
-  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [stats, setStats] = useState<BedStatistics | null>(null);
-  const [kpiData, setKpiData] = useState<KPIData | null>(null);
-  const [hospital, setHospital] = useState<Hospital | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        setIsLoading(true);
-        
-        // Get user's hospitals
-        const hospitalsResponse = await organizationService.getHospitals();
-        const hospitals = hospitalsResponse.results || [];
-        
-        if (hospitals.length === 0) {
-          console.error("No hospitals found for user");
-          setIsLoading(false);
-          return;
-        }
-        
-        const selectedHospital = hospitals[0];
-        setHospital(selectedHospital);
-        
-        const [bedStats, dashboardKPIs] = await Promise.all([
-          bedService.getStatistics(selectedHospital.id),
-          dashboardService.getKPIData(selectedHospital.id),
-        ]);
-        setStats(bedStats);
-        setKpiData(dashboardKPIs);
-      } catch (error) {
-        console.error("Failed to load dashboard:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadDashboard();
-  }, []);
+  return (
+    <ProtectedRoute>
+      <OrganizationProvider>
+        <HospitalProvider>
+          <DashboardLayoutContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
+            <DepartmentProvider>
+              <WardProvider>
+                {children}
+              </WardProvider>
+            </DepartmentProvider>
+          </DashboardLayoutContent>
+        </HospitalProvider>
+      </OrganizationProvider>
+    </ProtectedRoute>
+  );
+}
+
+function DashboardLayoutContent({
+  sidebarOpen,
+  setSidebarOpen,
+  children,
+}: {
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+  children: React.ReactNode;
+}) {
+  const { hospital, isLoading, error } = useHospital();
 
   if (isLoading) {
     return <LoadingScreen minDuration={800} />;
   }
-    
+
+  if (error) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <p className="text-red-600 font-medium">{error}</p>
+          <p className="text-gray-500 text-sm mt-2">Please contact support if this persists.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen w-full bg-gray-50 font-sans text-gray-900 overflow-hidden">
       <Sidebar
@@ -91,7 +68,7 @@ export default function DashboardLayout({
       />
       <main className="flex-1 flex flex-col min-w-0">
         <TopHeader
-          onMenuToggle={() => setSidebarOpen((prev) => !prev)}
+          onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
           hospitalName={hospital?.name || "General Hospital"}
         />
 

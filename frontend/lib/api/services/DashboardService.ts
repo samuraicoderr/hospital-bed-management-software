@@ -14,6 +14,8 @@ import {
 } from '../types';
 import { PaginatedAnything } from '../types/common.types';
 
+const API_VERSION = '/api/v1';
+
 class DashboardService {
   /**
    * Get operational dashboard data
@@ -49,7 +51,7 @@ class DashboardService {
    */
   async getDepartmentStats(hospitalId: string): Promise<DepartmentStats[]> {
     const response = await api.get<DepartmentStats[]>(
-      BackendRoutes.dashboard.departmentStats,
+      `${API_VERSION}/dashboard/department_stats/`,
       {
         params: { hospital: hospitalId },
       }
@@ -64,10 +66,10 @@ class DashboardService {
     const [bedStats, cleaningResponse, admissionsResponse] = await Promise.all([
       api.get<BedStatistics>(BackendRoutes.beds.statistics, { params: { hospital: hospitalId } }),
       api.get<PaginatedAnything<unknown>>(BackendRoutes.housekeeping.tasks, {
-        params: { hospital: hospitalId, status: 'pending,assigned,in_progress', page_size: 1 },
+        params: { hospital: hospitalId, status: ['pending', 'assigned', 'in_progress'], page_size: 1 },
       }),
-      api.get<PaginatedAnything<unknown>>(BackendRoutes.admissions.base, {
-        params: { hospital: hospitalId, status: 'pending,approved', page_size: 1 },
+      api.get<PaginatedAnything<unknown>>(BackendRoutes.admissions.requests, {
+        params: { hospital: hospitalId, status: ['pending', 'approved'], page_size: 1 },
       }),
     ]);
 

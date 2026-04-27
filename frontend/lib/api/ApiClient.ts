@@ -443,6 +443,7 @@ class ApiClient {
    * Build full URL
    */
   private buildURL(endpoint: string): string {
+    // console.warn(`[ApiClient] buildURL called with endpoint: ${endpoint}, baseURL: ${this.baseURL}`);
     if (/^https?:\/\//i.test(endpoint)) {
       return endpoint;
     }
@@ -462,6 +463,11 @@ class ApiClient {
   }
 
   private buildURLWithParams(endpoint: string, params?: Record<string, any>): string {
+    if (!endpoint){
+      throw Error(
+        `buildURLWithParams(endpoint=${endpoint}, params=${JSON.stringify(params)}): called with empty endpoint, like wtf bro`
+      );
+    }
     const base = this.buildURL(endpoint);
     const qs = this.serializeParams(params);
     return qs ? `${base}${qs}` : base;
@@ -584,9 +590,9 @@ class ApiClient {
     }
 
     const apiError = this.createError(
-      error instanceof Error ? error.message : 'Unknown error occurred',
+      error instanceof Error ? error.message : 'A frontend error occurred before a request could be made',
       0,
-      'NETWORK_ERROR',
+      'FRONTEND_APPLICATION_ERROR',
       error
     );
 
