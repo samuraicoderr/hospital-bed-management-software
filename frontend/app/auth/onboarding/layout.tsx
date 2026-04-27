@@ -152,7 +152,7 @@ export default function OnboardingLayout({
   /**
    * Loading State (Prevents Flicker)
    */
-  if (isLoading || !partialUser ) {
+  if (isLoading || !partialUser || !activeStep) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="animate-pulse text-muted-foreground">

@@ -11,6 +11,7 @@ import {
   Transfer,
   Patient,
   PatientDetail,
+  BedListItem,
   CreateAdmissionRequest,
   AssignBedRequest,
   CreateTransferRequest,
@@ -29,7 +30,7 @@ class AdmissionService {
     params?: AdmissionQueueFilters & { page?: number; page_size?: number }
   ): Promise<PaginatedAnything<AdmissionRequest>> {
     const response = await api.get<PaginatedAnything<AdmissionRequest>>(
-      BackendRoutes.admissions.base,
+      BackendRoutes.admissions.requests,
       { params }
     );
     return response.data;
@@ -37,14 +38,14 @@ class AdmissionService {
 
   async getAdmissionRequest(id: string): Promise<AdmissionRequest> {
     const response = await api.get<AdmissionRequest>(
-      BackendRoutes.admissions.detail(id)
+      BackendRoutes.admissions.requestDetail(id)
     );
     return response.data;
   }
 
   async createAdmissionRequest(data: CreateAdmissionRequest): Promise<AdmissionRequest> {
     const response = await api.post<AdmissionRequest>(
-      BackendRoutes.admissions.base,
+      BackendRoutes.admissions.requests,
       data
     );
     return response.data;
@@ -55,7 +56,7 @@ class AdmissionService {
     data: Partial<CreateAdmissionRequest>
   ): Promise<AdmissionRequest> {
     const response = await api.patch<AdmissionRequest>(
-      BackendRoutes.admissions.detail(id),
+      BackendRoutes.admissions.requestDetail(id),
       data
     );
     return response.data;
@@ -79,9 +80,9 @@ class AdmissionService {
     return response.data as { status: string; admission_id: string; bed: string | null };
   }
 
-  async suggestBeds(id: string): Promise<any[]> {
-    const response = await api.get(BackendRoutes.admissions.suggestBeds(id));
-    return response.data as any[];
+  async suggestBeds(id: string): Promise<BedListItem[]> {
+    const response = await api.get<BedListItem[]>(BackendRoutes.admissions.suggestBeds(id));
+    return response.data;
   }
 
   // ─────────────────────────────────────────────
@@ -92,7 +93,7 @@ class AdmissionService {
     params?: { hospital?: string; department?: string; status?: string } & { page?: number }
   ): Promise<PaginatedAnything<Admission>> {
     const response = await api.get<PaginatedAnything<Admission>>(
-      BackendRoutes.admissions.active,
+      BackendRoutes.admissions.admissions,
       { params }
     );
     return response.data;
@@ -175,10 +176,10 @@ class AdmissionService {
   }
 
   async searchPatients(query: string): Promise<Patient[]> {
-    const response = await api.get(BackendRoutes.patients.search, {
+    const response = await api.get<PaginatedAnything<Patient>>(BackendRoutes.patients.base, {
       params: { q: query },
     });
-    return (response.data as any).results || [];
+    return response.data.results || [];
   }
 
   // ─────────────────────────────────────────────

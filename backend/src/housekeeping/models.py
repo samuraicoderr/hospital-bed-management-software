@@ -135,7 +135,8 @@ class CleaningTask(models.Model):
                 self.priority,
                 CLEANING_SLA_MINUTES[CleaningPriority.ROUTINE]
             )
-            self.sla_deadline = self.created_at + timezone.timedelta(minutes=sla_minutes)
+            base_time = self.created_at or timezone.now()
+            self.sla_deadline = base_time + timezone.timedelta(minutes=sla_minutes)
             self.sla_minutes = sla_minutes
         super().save(*args, **kwargs)
 

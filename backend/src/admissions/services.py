@@ -47,9 +47,15 @@ class AdmissionService:
         """Assign a bed to an admission request."""
         with transaction.atomic():
             bed = Bed.objects.select_for_update().get(pk=bed.pk)
-
-            if not bed.is_available():
-                raise NoAvailableBedsException("Bed is no longer available")
+            from src.beds.services import BedService
+            issues = BedService.validate_patient_eligibility(
+                bed,
+                patient_gender=getattr(admission_request.patient, "gender", None),
+                requires_isolation=admission_request.requires_isolation
+                or admission_request.required_bed_type == "isolation",
+            )
+            if issues:
+                raise NoAvailableBedsException(" ".join(issues))
 
             admission_request.assigned_bed = bed
             admission_request.status = AdmissionStatus.ASSIGNED
@@ -57,10 +63,11 @@ class AdmissionService:
             admission_request.assigned_at = timezone.now()
             admission_request.save()
 
-            bed.change_status(
-                new_status=BedStatus.RESERVED,
+            bed.reserve_for_request(
+                admission_request,
                 user=user,
-                reason="Reserved for admission"
+                reason=f"Reserved for admission request {admission_request.id}",
+                until=admission_request.reserved_until,
             )
 
             return admission_request
@@ -69,6 +76,8 @@ class AdmissionService:
     def admit_patient(admission_request, user):
         """Convert admission request to actual admission."""
         with transaction.atomic():
+            if not admission_request.assigned_bed:
+                raise NoAvailableBedsException("Admission request does not have an assigned bed.")
             admission = Admission.objects.create(
                 patient=admission_request.patient,
                 bed=admission_request.assigned_bed,
@@ -84,14 +93,11 @@ class AdmissionService:
             admission_request.status = AdmissionStatus.ADMITTED
             admission_request.save()
 
-            admission_request.assigned_bed.change_status(
-                new_status=BedStatus.OCCUPIED,
+            admission_request.assigned_bed.assign_to_admission(
+                admission,
                 user=user,
-                reason="Patient admitted"
+                reason=f"Patient admitted from request {admission_request.id}",
             )
-
-            admission_request.assigned_bed.current_admission = admission
-            admission_request.assigned_bed.save()
 
             return admission
 
@@ -172,33 +178,32 @@ class TransferService:
     def complete_transfer(transfer, completed_by):
         """Complete an approved transfer."""
         with transaction.atomic():
-            # Update original bed
+            admission = transfer.admission
             if transfer.from_bed:
-                transfer.from_bed.mark_for_cleaning(
+                transfer.from_bed.release_from_admission(
                     user=completed_by,
-                    priority="urgent" if transfer.transfer_type == TransferType.INTER_HOSPITAL else "routine"
+                    reason=f"Transferred from bed {transfer.from_bed.bed_code}",
+                    trigger_cleaning=True,
+                    cleaning_priority="urgent" if transfer.transfer_type == TransferType.INTER_HOSPITAL else "routine",
                 )
 
-            # Update admission
-            admission = transfer.admission
             admission.bed = transfer.to_bed
             admission.department = transfer.to_department
             if transfer.from_hospital != transfer.to_hospital:
                 admission.hospital = transfer.to_hospital
             admission.save()
 
-            # Complete transfer
-            transfer.complete(completed_by)
+            transfer.status = TransferStatus.COMPLETED
+            transfer.completed_by = completed_by
+            transfer.completed_at = timezone.now()
+            transfer.save()
 
-            # Update destination bed
             if transfer.to_bed:
-                transfer.to_bed.change_status(
-                    new_status=BedStatus.OCCUPIED,
+                transfer.to_bed.assign_to_admission(
+                    admission,
                     user=completed_by,
-                    reason=f"Transfer completed from {transfer.from_bed}"
+                    reason=f"Transfer completed from {transfer.from_bed.bed_code if transfer.from_bed else 'unknown bed'}",
                 )
-                transfer.to_bed.current_admission = admission
-                transfer.to_bed.save()
 
             AuditService.log_action(
                 action="update",
@@ -209,5 +214,4 @@ class TransferService:
             )
 
             return transfer
-
 

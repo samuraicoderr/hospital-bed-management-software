@@ -122,12 +122,22 @@ export const BackendRoutes = {
     block: (id: string) => `${API_VERSION}/beds/${id}/block/`,
     unblock: (id: string) => `${API_VERSION}/beds/${id}/unblock/`,
     updateStatus: (id: string) => `${API_VERSION}/beds/${id}/update_status/`,
+    markForCleaning: (id: string) => `${API_VERSION}/beds/${id}/mark_for_cleaning/`,
+    reserve: (id: string) => `${API_VERSION}/beds/${id}/reserve/`,
+    clearReservation: (id: string) => `${API_VERSION}/beds/${id}/clear_reservation/`,
+    assign: (id: string) => `${API_VERSION}/beds/${id}/assign/`,
+    release: (id: string) => `${API_VERSION}/beds/${id}/release/`,
+    eligible: (id: string) => `${API_VERSION}/beds/${id}/eligible/`,
     history: (id: string) => `${API_VERSION}/beds/${id}/history/`,
     searchAvailable: `${API_VERSION}/beds/search_available/`,
     statistics: `${API_VERSION}/beds/statistics/`,
+    analytics: `${API_VERSION}/beds/analytics/`,
 
     equipmentTags: `${API_VERSION}/equipment-tags/`,
     equipmentTagDetail: (id: string) => `${API_VERSION}/equipment-tags/${id}/`,
+    maintenanceRecords: `${API_VERSION}/bed-maintenance-records/`,
+    maintenanceRecordDetail: (id: string) => `${API_VERSION}/bed-maintenance-records/${id}/`,
+    resolveMaintenanceRecord: (id: string) => `${API_VERSION}/bed-maintenance-records/${id}/resolve/`,
   },
 
   /* =========================

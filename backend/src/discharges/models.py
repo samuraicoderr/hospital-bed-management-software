@@ -173,7 +173,12 @@ class Discharge(models.Model):
             # Mark bed for cleaning
             if self.bed and trigger_cleaning:
                 priority = "isolation_clean" if admission.is_isolation else "routine"
-                self.bed.mark_for_cleaning(user=user, priority=priority)
+                self.bed.release_from_admission(
+                    user=user,
+                    reason=f"Discharged admission {admission.id}",
+                    trigger_cleaning=True,
+                    cleaning_priority=priority,
+                )
 
             # Record turnover time if bed becomes available later
             self.discharge_process_started_at = self.initiated_at

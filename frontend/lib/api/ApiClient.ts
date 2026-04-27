@@ -443,6 +443,13 @@ class ApiClient {
    * Build full URL
    */
   private buildURL(endpoint: string): string {
+    if (/^https?:\/\//i.test(endpoint)) {
+      return endpoint;
+    }
+    if (endpoint.startsWith('/')) {
+      const base = new URL(this.baseURL);
+      return new URL(endpoint, `${base.protocol}//${base.host}`).toString();
+    }
     // Remove leading slash from endpoint if present
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
 
@@ -455,9 +462,7 @@ class ApiClient {
   }
 
   private buildURLWithParams(endpoint: string, params?: Record<string, any>): string {
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
-    const cleanBaseURL = this.baseURL.endsWith('/') ? this.baseURL.slice(0, -1) : this.baseURL;
-    const base = `${cleanBaseURL}/${cleanEndpoint}`;
+    const base = this.buildURL(endpoint);
     const qs = this.serializeParams(params);
     return qs ? `${base}${qs}` : base;
   }

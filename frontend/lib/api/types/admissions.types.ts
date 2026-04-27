@@ -101,6 +101,8 @@ export interface ClinicalRequirement {
 export interface AdmissionRequest {
   id: UUID;
   patient: Patient;
+  patient_name?: string;
+  patient_mrn?: string;
   admission_source: AdmissionSource;
   admission_source_display: string;
   request_date: string;
@@ -151,6 +153,9 @@ export interface BedRef {
 export interface Admission {
   id: UUID;
   patient: Patient;
+  patient_name?: string;
+  patient_mrn?: string;
+  bed_code?: string | null;
   bed?: Bed | null;
   admission_request?: UUID;
   hospital: HospitalRef;

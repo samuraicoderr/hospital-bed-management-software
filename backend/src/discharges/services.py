@@ -68,10 +68,14 @@ class DischargeService:
             admission.discharged_by = user
             admission.save()
 
-            # Mark bed for cleaning
             if discharge.bed:
                 priority = "isolation_clean" if admission.is_isolation else "routine"
-                discharge.bed.mark_for_cleaning(user=user, priority=priority)
+                discharge.bed.release_from_admission(
+                    user=user,
+                    reason=f"Discharged admission {admission.id}",
+                    trigger_cleaning=True,
+                    cleaning_priority=priority,
+                )
 
             AuditService.log_action(
                 action="update",
@@ -91,4 +95,3 @@ class DischargeService:
             hospital=hospital,
             status__in=["pending", "approved"]
         ).select_related("patient", "admission", "bed")
-
