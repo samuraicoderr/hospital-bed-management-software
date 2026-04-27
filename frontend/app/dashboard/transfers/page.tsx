@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import LoadingScreen from "../components/loading/LoadingScreen";
-import Sidebar from "../components/layout/Sidebar";
-import TopHeader from "../components/layout/TopHeader";
+import LoadingScreen from "../../components/loading/LoadingScreen";
+import Sidebar from "../../components/layout/Sidebar";
+import TopHeader from "../../components/layout/TopHeader";
 import { ProtectedRoute } from "@/lib/api/auth/authContext";
 import { admissionService } from "@/lib/api/services";
 import { Transfer, TransferStatus, TransferType } from "@/lib/api/types";

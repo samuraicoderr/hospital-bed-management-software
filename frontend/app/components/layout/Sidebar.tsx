@@ -32,6 +32,8 @@ interface SidebarProps {
 
 const navigationItems = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: FrontendRoutes.dashboard },
+  { key: "departments", label: "Departments", icon: Building2, path: FrontendRoutes.departments },
+  { key: "wards", label: "Wards", icon: HeartPulse, path: FrontendRoutes.wards },
   { key: "beds", label: "Bed Management", icon: Bed, path: FrontendRoutes.beds.root },
   { key: "admissions", label: "Admissions", icon: UserPlus, path: FrontendRoutes.admissions.root },
   { key: "transfers", label: "Transfers", icon: ArrowRightLeft, path: FrontendRoutes.transfers.root },

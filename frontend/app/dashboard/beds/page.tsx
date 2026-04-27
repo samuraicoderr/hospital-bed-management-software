@@ -17,9 +17,9 @@ import {
   X,
 } from "lucide-react";
 
-import LoadingScreen from "../components/loading/LoadingScreen";
-import Sidebar from "../components/layout/Sidebar";
-import TopHeader from "../components/layout/TopHeader";
+import LoadingScreen from "../../components/loading/LoadingScreen";
+import Sidebar from "../../components/layout/Sidebar";
+import TopHeader from "../../components/layout/TopHeader";
 import { ProtectedRoute } from "@/lib/api/auth/authContext";
 import { admissionService, bedService, organizationService } from "@/lib/api/services";
 import type {

@@ -39,65 +39,67 @@ export const FrontendRoutes = {
   onboardingComplete: '/auth/onboarding/complete',
 
   // Main application routes
+  departments: '/dashboard/departments',
+  wards: '/dashboard/wards',
   beds: {
-    root: '/beds',
-    detail: (id: string) => `/beds/${id}`,
-    grid: '/beds/grid',
-    map: '/beds/map',
+    root: '/dashboard/beds',
+    detail: (id: string) => `/dashboard/beds/${id}`,
+    grid: '/dashboard/beds/grid',
+    map: '/dashboard/beds/map',
   },
 
   admissions: {
-    root: '/admissions',
-    new: '/admissions/new',
-    detail: (id: string) => `/admissions/${id}`,
-    queue: '/admissions/queue',
+    root: '/dashboard/admissions',
+    new: '/dashboard/admissions/new',
+    detail: (id: string) => `/dashboard/admissions/${id}`,
+    queue: '/dashboard/admissions/queue',
   },
 
   patients: {
-    root: '/patients',
-    new: '/patients/new',
-    detail: (id: string) => `/patients/${id}`,
-    search: '/patients/search',
+    root: '/dashboard/patients',
+    new: '/dashboard/patients/new',
+    detail: (id: string) => `/dashboard/patients/${id}`,
+    search: '/dashboard/patients/search',
   },
 
   transfers: {
-    root: '/transfers',
-    new: '/transfers/new',
-    detail: (id: string) => `/transfers/${id}`,
+    root: '/dashboard/transfers',
+    new: '/dashboard/transfers/new',
+    detail: (id: string) => `/dashboard/transfers/${id}`,
   },
 
   discharges: {
-    root: '/discharges',
-    pending: '/discharges/pending',
+    root: '/dashboard/discharges',
+    pending: '/dashboard/discharges/pending',
   },
 
   housekeeping: {
-    root: '/housekeeping',
-    tasks: '/housekeeping/tasks',
-    staff: '/housekeeping/staff',
+    root: '/dashboard/housekeeping',
+    tasks: '/dashboard/housekeeping/tasks',
+    staff: '/dashboard/housekeeping/staff',
   },
 
   reports: {
-    root: '/reports',
-    daily: '/reports/daily',
-    utilization: '/reports/utilization',
-    turnover: '/reports/turnover',
+    root: '/dashboard/reports',
+    daily: '/dashboard/reports/daily',
+    utilization: '/dashboard/reports/utilization',
+    turnover: '/dashboard/reports/turnover',
   },
 
   alerts: {
-    root: '/alerts',
-    settings: '/alerts/settings',
+    root: '/dashboard/alerts',
+    settings: '/dashboard/alerts/settings',
   },
 
   settings: {
-    root: '/settings',
-    hospital: '/settings/hospital',
-    users: '/settings/users',
-    integrations: '/settings/integrations',
+    root: '/dashboard/settings',
+    hospital: '/dashboard/settings/hospital',
+    users: '/dashboard/settings/users',
+    integrations: '/dashboard/settings/integrations',
   },
 
-  organization: '/organization',
-  trash: '/trash',
+  organization: '/dashboard/organization',
+  trash: '/dashboard/trash',
 } as const;
 
 export const Routes = FrontendRoutes;
