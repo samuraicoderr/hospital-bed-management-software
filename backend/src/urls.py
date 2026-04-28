@@ -95,6 +95,10 @@ django_urls = [
     # path("summernote/", include("django_summernote.urls")),
 ]
 
+
+def health(request):
+    return JsonResponse({"status": "ok", "message": "We cool homie"})
+
 swagger_urls = [
     
     # OpenAPI schema endpoint
@@ -109,7 +113,8 @@ swagger_urls = [
     
     # Redoc UI (optional)
     path("api/redocs/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
-    path("health/", include("health_check.urls")),  # Updated
+    # path("health/", include("health_check.urls")),  # Updated
+    path("health/", health, name="health"),
     
     # the 'api-root' from django rest-frameworks default router
     re_path(r"^$", RedirectView.as_view(url=reverse_lazy("api-root"), permanent=False)),
