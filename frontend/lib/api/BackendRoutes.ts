@@ -150,11 +150,23 @@ export const BackendRoutes = {
       `${API_VERSION}/patients/${id}/admission_history/`,
     clinicalRequirements: (id: string) =>
       `${API_VERSION}/patients/${id}/clinical_requirements/`,
+    currentAdmission: (id: string) =>
+      `${API_VERSION}/patients/${id}/current_admission/`,
+    admissionStatus: (id: string) =>
+      `${API_VERSION}/patients/${id}/admission_status/`,
+    deactivate: (id: string) =>
+      `${API_VERSION}/patients/${id}/deactivate/`,
+    markDeceased: (id: string) =>
+      `${API_VERSION}/patients/${id}/mark_deceased/`,
   },
 
+  /* =========================
+   CLINICAL REQUIREMENTS
+  ========================== */
   clinicalRequirements: {
     base: `${API_VERSION}/clinical-requirements/`,
     detail: (id: string) => `${API_VERSION}/clinical-requirements/${id}/`,
+    resolve: (id: string) => `${API_VERSION}/clinical-requirements/${id}/resolve/`,
   },
 
   /* =========================

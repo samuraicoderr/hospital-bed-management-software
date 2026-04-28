@@ -5,7 +5,7 @@ import LoadingScreen from "../components/loading/LoadingScreen";
 import Sidebar from "../components/layout/Sidebar";
 import TopHeader from "../components/layout/TopHeader";
 import { ProtectedRoute } from "@/lib/api/auth/authContext";
-import { OrganizationProvider, HospitalProvider, DepartmentProvider, WardProvider } from "@/lib/api/contexts";
+import { OrganizationProvider, HospitalProvider, DepartmentProvider, WardProvider, PatientProvider } from "@/lib/api/contexts";
 import { useHospital } from "@/lib/api/contexts/HospitalContext";
 
 export default function DashboardLayout({
@@ -19,13 +19,15 @@ export default function DashboardLayout({
     <ProtectedRoute>
       <OrganizationProvider>
         <HospitalProvider>
-          <DashboardLayoutContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
-            <DepartmentProvider>
-              <WardProvider>
-                {children}
-              </WardProvider>
-            </DepartmentProvider>
-          </DashboardLayoutContent>
+          <PatientProvider>
+            <DashboardLayoutContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
+              <DepartmentProvider>
+                <WardProvider>
+                  {children}
+                </WardProvider>
+              </DepartmentProvider>
+            </DashboardLayoutContent>
+          </PatientProvider>
         </HospitalProvider>
       </OrganizationProvider>
     </ProtectedRoute>
@@ -66,7 +68,7 @@ function DashboardLayoutContent({
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <TopHeader
           onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
           hospitalName={hospital?.name || "General Hospital"}

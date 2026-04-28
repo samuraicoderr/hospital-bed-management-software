@@ -113,7 +113,7 @@ function Field({
 
 export default function DepartmentsPage() {
   const { hospital } = useHospital();
-  const { departments, isLoading, createDepartment, updateDepartment, deleteDepartment } = useDepartment();
+  const { departments, isLoading, loadDepartments, createDepartment, updateDepartment, deleteDepartment } = useDepartment();
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isBusy, setIsBusy] = useState(false);
@@ -139,6 +139,7 @@ export default function DepartmentsPage() {
   useEffect(() => {
     if (hospital) {
       loadBuildings();
+      loadDepartments(hospital.id);
     }
   }, [hospital, loadBuildings]);
 

@@ -41,7 +41,8 @@ const emptyCreateForm: CreateWardRequest = {
   is_isolation_capable: false,
 };
 
-function formatWardType(type: WardType): string {
+function formatWardType(type: WardType | undefined): string {
+  if (!type) return "N/A";
   return type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -116,7 +117,7 @@ function CheckboxField({
 
 export default function WardsPage() {
   const { hospital } = useHospital();
-  const { wards, isLoading, createWard, updateWard, deleteWard } = useWard();
+  const { wards, isLoading, createWard, loadWards, updateWard, deleteWard } = useWard();
   const [departments, setDepartments] = useState<Department[]>([]);
   const [selectedDepartment, setSelectedDepartment] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -146,6 +147,13 @@ export default function WardsPage() {
   useEffect(() => {
     loadDepartments();
   }, [loadDepartments]);
+
+  useEffect(() => {
+    if (selectedDepartment) {
+      loadWards(selectedDepartment);
+    }
+  }, [selectedDepartment, loadWards]);
+
 
   const filteredWards = useMemo(() => {
     if (!searchQuery) return wards;
