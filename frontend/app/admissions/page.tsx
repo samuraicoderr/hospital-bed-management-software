@@ -135,13 +135,13 @@ function AdmissionsContent() {
                       <div>
                         <div className="flex items-center gap-2">
                           <h3 className="font-semibold text-gray-900">
-                            {request.patient.first_name} {request.patient.last_name}
+                            {request.patient?.first_name} {request.patient?.last_name}
                           </h3>
                           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
                             {request.priority_display}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-500">MRN: {request.patient.mrn}</p>
+                        <p className="text-sm text-gray-500">MRN: {request.patient?.mrn}</p>
                       </div>
                       <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
                         {request.status_display}

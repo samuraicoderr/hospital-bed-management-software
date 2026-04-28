@@ -649,7 +649,7 @@ export default function AdmissionsPage() {
 								<div className="col-span-2 text-right">
 									<button
 										onClick={() => {
-											setSelectedAdmission(admission);
+											selectAdmission(admission);
 											setAdmissionUpdate({
 												diagnosis_code: admission.diagnosis_code || "",
 												diagnosis_description: admission.diagnosis_description || "",
@@ -718,7 +718,7 @@ export default function AdmissionsPage() {
 									<div className="col-span-1 text-right">
 										<button
 											onClick={() => {
-												setSelectedTransfer(transfer);
+												selectTransfer(transfer);
 												setShowTransferDetail(true);
 											}}
 											className="rounded p-1 text-slate-400 hover:bg-slate-50 hover:text-slate-600"

@@ -8,10 +8,10 @@ import type {
   PatientGender,
   RequirementType,
   RequirementPriority,
-  CreatePatientRequest as CreatePatientRecordRequest,
   UpdatePatientRequest,
   CreateClinicalRequirementRequest,
 } from "@/lib/api/types";
+import type { CreatePatientRequest as CreatePatientRecordRequest } from "@/lib/api/types/patients.types";
 import { cn, interpretServerError } from "@/lib/utils";
 import {
   Users,
@@ -173,7 +173,8 @@ function PatientsContent() {
   });
 
   const getErrorMessage = useCallback((err: unknown) => {
-    return interpretServerError(err);
+    const errors = interpretServerError(err);
+    return errors[0] || "An error occurred";
   }, []);
 
   useEffect(() => {
@@ -224,7 +225,7 @@ function PatientsContent() {
     setIsBusy(true);
     setFormError(null);
     try {
-      await createPatient({ ...createForm, primary_hospital: hospital?.id });
+      await createPatient(createForm as any);
       setShowCreateModal(false);
       setCreateForm({
         mrn: "",
@@ -376,7 +377,7 @@ function PatientsContent() {
         allergies: detail.allergies,
         medical_history: detail.medical_history,
         current_medications: detail.current_medications,
-        primary_hospital: detail.primary_hospital,
+        primary_hospital: detail.primary_hospital || undefined,
         ehr_id: detail.ehr_id,
         external_source: detail.external_source,
       });

@@ -46,7 +46,7 @@ function getStrengthClass(index: number, score: number): string {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register, isLoading, clearError, error, setOnboardingToken } = useAuth();
+  const { register, error, clearError, updatePartialUser, setOnboardingToken, isLoading } = useAuth();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");

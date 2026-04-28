@@ -439,6 +439,35 @@ class Bed(models.Model):
                 return self.change_status(BedStatus.RESERVED, user=user, reason=reason)
             return self.change_status(BedStatus.AVAILABLE, user=user, reason=reason)
 
+    def unmark_for_cleaning(self, user=None, reason="Cleaning requirement cleared"):
+        with transaction.atomic():
+            from src.housekeeping.models import CleaningTask
+            open_tasks = self.cleaning_tasks.filter(status__in=["pending", "assigned", "in_progress", "escalated"])
+            open_tasks.update(status="cancelled")
+            if self.current_admission_id:
+                return self.change_status(BedStatus.OCCUPIED, user=user, reason=reason)
+            if self.reservation_is_active():
+                return self.change_status(BedStatus.RESERVED, user=user, reason=reason)
+            if self.has_open_maintenance():
+                return self.change_status(BedStatus.UNDER_MAINTENANCE, user=user, reason=reason)
+            return self.change_status(BedStatus.AVAILABLE, user=user, reason=reason)
+
+    def activate(self, user=None, reason="Bed activated"):
+        self.is_active = True
+        self.save(update_fields=["is_active", "updated_at"])
+        return self
+
+    def deactivate(self, user=None, reason="Bed deactivated"):
+        self.is_active = False
+        self.save(update_fields=["is_active", "updated_at"])
+        return self
+
+    def soft_delete(self, user=None, reason="Bed deleted"):
+        self.is_deleted = True
+        self.is_active = False
+        self.save(update_fields=["is_deleted", "is_active", "updated_at"])
+        return self
+
 
 class BedStatusHistory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid7, editable=False)

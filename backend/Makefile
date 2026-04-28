@@ -179,6 +179,16 @@ diff-unstaged:
 diff: diff-unstaged
 
 
+wiff:
+	dit diff > ./a.diff
+	windsurf ./a.diff
+	rm ./a.diff
+
+
+wiff+:
+	git diff --cached > ./a.diff
+	windsurf ./a.diff
+	rm ./a.diff
 
 # ----------------------------------------------------------------------------------
 

@@ -132,6 +132,10 @@ export const BackendRoutes = {
     searchAvailable: `${API_VERSION}/beds/search_available/`,
     statistics: `${API_VERSION}/beds/statistics/`,
     analytics: `${API_VERSION}/beds/analytics/`,
+    unmarkForCleaning: (id: string) => `${API_VERSION}/beds/${id}/unmark_for_cleaning/`,
+    activate: (id: string) => `${API_VERSION}/beds/${id}/activate/`,
+    deactivate: (id: string) => `${API_VERSION}/beds/${id}/deactivate/`,
+    deleteBed: (id: string) => `${API_VERSION}/beds/${id}/delete_bed/`,
 
     equipmentTags: `${API_VERSION}/equipment-tags/`,
     equipmentTagDetail: (id: string) => `${API_VERSION}/equipment-tags/${id}/`,
@@ -217,8 +221,11 @@ export const BackendRoutes = {
     assign: (id: string) => `${API_VERSION}/cleaning-tasks/${id}/assign/`,
     start: (id: string) => `${API_VERSION}/cleaning-tasks/${id}/start/`,
     complete: (id: string) => `${API_VERSION}/cleaning-tasks/${id}/complete/`,
+    escalate: (id: string) => `${API_VERSION}/cleaning-tasks/${id}/escalate/`,
+    qualityCheck: (id: string) => `${API_VERSION}/cleaning-tasks/${id}/quality_check/`,
     backlog: `${API_VERSION}/cleaning-tasks/backlog/`,
     myTasks: `${API_VERSION}/cleaning-tasks/my_tasks/`,
+    dashboard: `${API_VERSION}/cleaning-tasks/dashboard/`,
 
     staff: `${API_VERSION}/housekeeping-staff/`,
     staffDetail: (id: string) =>
@@ -234,7 +241,9 @@ export const BackendRoutes = {
     acknowledge: (id: string) =>
       `${API_VERSION}/alerts/${id}/acknowledge/`,
     resolve: (id: string) => `${API_VERSION}/alerts/${id}/resolve/`,
+    markRead: `${API_VERSION}/alerts/mark_read/`,
     myAlerts: `${API_VERSION}/alerts/my_alerts/`,
+    stats: `${API_VERSION}/alerts/stats/`,
 
     configurations: `${API_VERSION}/alert-configurations/`,
     configurationDetail: (id: string) =>

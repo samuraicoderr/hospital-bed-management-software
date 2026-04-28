@@ -31,11 +31,10 @@ import type {
   CreateBedRequest,
   Department,
   EquipmentTag,
-  GenderRestriction,
   Hospital,
   Ward,
 } from "@/lib/api/types";
-import { BedType } from "@/lib/api/types";
+import { BedType, GenderRestriction, BedStatus } from "@/lib/api/types";
 import { cn, interpretServerError } from "@/lib/utils";
 
 type TabKey = "inventory" | "maintenance" | "equipment" | "analytics";
@@ -51,7 +50,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const BED_TYPE_OPTIONS = Object.values(BedType);
-const GENDER_OPTIONS: GenderRestriction[] = ["none", "male_only", "female_only"];
+const GENDER_OPTIONS: GenderRestriction[] = [GenderRestriction.NONE, GenderRestriction.MALE_ONLY, GenderRestriction.FEMALE_ONLY];
 const TAB_LABELS: Record<TabKey, string> = {
   inventory: "Inventory",
   maintenance: "Maintenance",
@@ -64,7 +63,7 @@ const emptyCreateForm: CreateBedRequest = {
   bed_number: "",
   bed_type: BedType.GENERAL,
   is_isolation: false,
-  gender_restriction: "none",
+  gender_restriction: GenderRestriction.NONE,
   bed_size: "standard",
   max_patient_weight_kg: 150,
   equipment_tag_ids: [],
@@ -159,7 +158,7 @@ function Section({
 function BedsContent() {
   const { hospital } = useHospital();
   const { departments } = useDepartment();
-  const { wards } = useWard();
+  const { wards, loadWards } = useWard();
   const [equipmentTags, setEquipmentTags] = useState<EquipmentTag[]>([]);
   const [admissionRequests, setAdmissionRequests] = useState<AdmissionRequest[]>([]);
   const [activeAdmissions, setActiveAdmissions] = useState<Admission[]>([]);
@@ -660,12 +659,21 @@ function BedsContent() {
                   <div className="grid gap-2">
                     <div className="text-sm font-medium text-slate-800">Actions</div>
                     <div className="grid gap-2 sm:grid-cols-2">
-                      <button
-                        onClick={() => void runBedAction(() => bedService.markForCleaning(selectedBed.id, { priority: "routine" }), selectedBed.id)}
-                        className="border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
-                      >
-                        Mark for cleaning
-                      </button>
+                      {(selectedBed.status === "cleaning_required" || selectedBed.status === "cleaning_in_progress") ? (
+                        <button
+                          onClick={() => void runBedAction(() => bedService.unmarkForCleaning(selectedBed.id, "Cleaning requirement cleared"), selectedBed.id)}
+                          className="border border-emerald-300 px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50"
+                        >
+                          Unmark for cleaning
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => void runBedAction(() => bedService.markForCleaning(selectedBed.id, { priority: "routine" }), selectedBed.id)}
+                          className="border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                        >
+                          Mark for cleaning
+                        </button>
+                      )}
                       {selectedBed.status === "blocked" ? (
                         <button
                           onClick={() => void runBedAction(() => bedService.unblockBed(selectedBed.id), selectedBed.id)}
@@ -693,71 +701,132 @@ function BedsContent() {
                           Release bed
                         </button>
                       ) : null}
+                      {!selectedBed.is_active ? (
+                        <button
+                          onClick={() => void runBedAction(() => bedService.activateBed(selectedBed.id, "Bed activated"), selectedBed.id)}
+                          className="border border-emerald-300 px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50"
+                        >
+                          Activate bed
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => void runBedAction(() => bedService.deactivateBed(selectedBed.id, "Bed deactivated"), selectedBed.id)}
+                          className="border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                        >
+                          Deactivate bed
+                        </button>
+                      )}
                       <button
-                        onClick={() =>
-                          void runBedAction(
-                            () =>
-                              bedService.updateBed(selectedBed.id, {
-                                is_active: !selectedBed.is_active,
-                              }),
-                            selectedBed.id
-                          )
-                        }
-                        className="border border-slate-300 px-3 py-2 text-sm text-slate-700 hover:bg-slate-100"
+                        onClick={() => {
+                          if (!window.confirm("Are you sure you want to delete this bed? This action cannot be undone.")) return;
+                          void runBedAction(() => bedService.deleteBed(selectedBed.id, "Bed deleted"), selectedBed.id);
+                        }}
+                        className="border border-rose-300 px-3 py-2 text-sm text-rose-700 hover:bg-rose-50"
                       >
-                        {selectedBed.is_active ? "Deactivate" : "Activate"} bed
+                        Delete bed
                       </button>
                     </div>
                   </div>
 
                   <div className="grid gap-3">
-                    <div className="text-sm font-medium text-slate-800">Reservation and assignment</div>
+                    <div className="text-sm font-medium text-slate-800">Patient Assignment</div>
                     <div className="grid gap-2">
-                      <select
-                        defaultValue=""
-                        onChange={(event) => {
-                          const admissionRequestId = event.target.value;
-                          if (!admissionRequestId) return;
-                          const reservedUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-                          void runBedAction(
-                            () =>
-                              bedService.reserveBed(selectedBed.id, {
-                                admission_request_id: admissionRequestId,
-                                reserved_until: reservedUntil,
-                              }),
-                            selectedBed.id
-                          );
-                        }}
-                        className="border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
-                      >
-                        <option value="">Reserve for an admission request</option>
-                        {admissionRequests.map((request) => (
-                          <option key={request.id} value={request.id}>
-                            {request.patient_name || `${request.patient?.first_name || ""} ${request.patient?.last_name || ""}`.trim() || request.id}
-                            {request.patient_mrn ? ` (${request.patient_mrn})` : request.patient?.mrn ? ` (${request.patient.mrn})` : ""}
-                          </option>
-                        ))}
-                      </select>
-                      <select
-                        defaultValue=""
-                        onChange={(event) => {
-                          const admissionId = event.target.value;
-                          if (!admissionId) return;
-                          void runBedAction(
-                            () => bedService.assignBed(selectedBed.id, { admission_id: admissionId }),
-                            selectedBed.id
-                          );
-                        }}
-                        className="border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
-                      >
-                        <option value="">Assign to an active admission</option>
-                        {activeAdmissions.map((admission) => (
-                          <option key={admission.id} value={admission.id}>
-                            {admission.patient_name || `${admission.patient?.first_name || ""} ${admission.patient?.last_name || ""}`.trim() || admission.id}
-                            {admission.patient_mrn ? ` (${admission.patient_mrn})` : admission.patient?.mrn ? ` (${admission.patient.mrn})` : ""}
-                          </option>
-                        ))}
-                      </select>
+                      {selectedBed.current_admission ? (
+                        <div className="grid gap-2 border border-indigo-200 bg-indigo-50 p-4">
+                          <div className="text-sm font-medium text-indigo-900">Currently assigned</div>
+                          <div className="text-sm text-indigo-700">{selectedBed.current_patient?.name}</div>
+                          <div className="text-xs text-indigo-600">MRN {selectedBed.current_patient?.mrn}</div>
+                          <button
+                            onClick={() => {
+                              if (!window.confirm("Are you sure you want to unassign this patient from the bed?")) return;
+                              void runBedAction(() => bedService.releaseBed(selectedBed.id, { trigger_cleaning: true }), selectedBed.id);
+                            }}
+                            className="mt-2 border border-rose-300 bg-white px-3 py-2 text-sm text-rose-700 hover:bg-rose-50"
+                          >
+                            Unassign patient
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid gap-2">
+                          <select
+                            defaultValue=""
+                            onChange={(event) => {
+                              const admissionId = event.target.value;
+                              if (!admissionId) return;
+                              if (!window.confirm("Assign this patient to the bed?")) return;
+                              void runBedAction(
+                                () => bedService.assignBed(selectedBed.id, { admission_id: admissionId }),
+                                selectedBed.id
+                              );
+                            }}
+                            className="border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
+                          >
+                            <option value="">Assign patient from active admission</option>
+                            {activeAdmissions.map((admission) => (
+                              <option key={admission.id} value={admission.id}>
+                                {admission.patient_name || `${admission.patient?.first_name || ""} ${admission.patient?.last_name || ""}`.trim() || admission.id}
+                                {admission.patient_mrn ? ` (${admission.patient_mrn})` : admission.patient?.mrn ? ` (${admission.patient.mrn})` : ""}
+                              </option>
+                            ))}
+                          </select>
+                          {activeAdmissions.length === 0 && (
+                            <div className="text-xs text-slate-500">No active admissions to assign</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3">
+                    <div className="text-sm font-medium text-slate-800">Reservation</div>
+                    <div className="grid gap-2">
+                      {selectedBed.current_reservation ? (
+                        <div className="grid gap-2 border border-amber-200 bg-amber-50 p-4">
+                          <div className="text-sm font-medium text-amber-900">Currently reserved</div>
+                          <div className="text-sm text-amber-700">{selectedBed.current_reservation.patient_name}</div>
+                          <div className="text-xs text-amber-600">Until {formatDateTime(selectedBed.current_reservation.reserved_until)}</div>
+                          <button
+                            onClick={() => {
+                              if (!window.confirm("Clear this reservation?")) return;
+                              void runBedAction(() => bedService.clearReservation(selectedBed.id), selectedBed.id);
+                            }}
+                            className="mt-2 border border-amber-300 bg-white px-3 py-2 text-sm text-amber-700 hover:bg-amber-50"
+                          >
+                            Clear reservation
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="grid gap-2">
+                          <select
+                            defaultValue=""
+                            onChange={(event) => {
+                              const admissionRequestId = event.target.value;
+                              if (!admissionRequestId) return;
+                              const reservedUntil = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+                              void runBedAction(
+                                () =>
+                                  bedService.reserveBed(selectedBed.id, {
+                                    admission_request_id: admissionRequestId,
+                                    reserved_until: reservedUntil,
+                                  }),
+                                selectedBed.id
+                              );
+                            }}
+                            className="border border-slate-300 px-3 py-2 text-sm outline-none focus:border-emerald-600"
+                          >
+                            <option value="">Reserve for admission request</option>
+                            {admissionRequests.map((request) => (
+                              <option key={request.id} value={request.id}>
+                                {request.patient_name || `${request.patient?.first_name || ""} ${request.patient?.last_name || ""}`.trim() || request.id}
+                                {request.patient_mrn ? ` (${request.patient_mrn})` : request.patient?.mrn ? ` (${request.patient.mrn})` : ""}
+                              </option>
+                            ))}
+                          </select>
+                          {admissionRequests.length === 0 && (
+                            <div className="text-xs text-slate-500">No admission requests to reserve</div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 

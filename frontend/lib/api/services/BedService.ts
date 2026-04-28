@@ -50,10 +50,6 @@ class BedService {
     return response.data;
   }
 
-  async deleteBed(id: string): Promise<void> {
-    await api.delete(BackendRoutes.beds.detail(id));
-  }
-
   async updateStatus(id: string, data: BedStatusUpdateRequest): Promise<Bed> {
     const response = await api.post<Bed>(BackendRoutes.beds.updateStatus(id), data);
     return response.data;
@@ -71,6 +67,26 @@ class BedService {
 
   async markForCleaning(id: string, payload: { priority?: string; reason?: string }): Promise<Bed> {
     const response = await api.post<Bed>(BackendRoutes.beds.markForCleaning(id), payload);
+    return response.data;
+  }
+
+  async unmarkForCleaning(id: string, reason?: string): Promise<Bed> {
+    const response = await api.post<Bed>(BackendRoutes.beds.unmarkForCleaning(id), { reason });
+    return response.data;
+  }
+
+  async activateBed(id: string, reason?: string): Promise<Bed> {
+    const response = await api.post<Bed>(BackendRoutes.beds.activate(id), { reason });
+    return response.data;
+  }
+
+  async deactivateBed(id: string, reason?: string): Promise<Bed> {
+    const response = await api.post<Bed>(BackendRoutes.beds.deactivate(id), { reason });
+    return response.data;
+  }
+
+  async deleteBed(id: string, reason?: string): Promise<Bed> {
+    const response = await api.post<Bed>(BackendRoutes.beds.deleteBed(id), { reason });
     return response.data;
   }
 

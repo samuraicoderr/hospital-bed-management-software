@@ -190,6 +190,14 @@ class BedViewSet(ViewSetHelperMixin, viewsets.ModelViewSet):
         return Response(BedDetailSerializer(bed, context={"request": request}).data)
 
     @action(detail=True, methods=["post"])
+    def unmark_for_cleaning(self, request, pk=None):
+        bed = self.get_object()
+        HospitalAccessService.require_structure_management(bed.get_hospital(), request.user)
+        reason = request.data.get("reason", "Cleaning requirement cleared")
+        bed = bed.unmark_for_cleaning(user=request.user, reason=reason)
+        return Response(BedDetailSerializer(bed, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"])
     def reserve(self, request, pk=None):
         bed = self.get_object()
         HospitalAccessService.require_structure_management(bed.get_hospital(), request.user)
@@ -299,6 +307,30 @@ class BedViewSet(ViewSetHelperMixin, viewsets.ModelViewSet):
             "admission__patient",
         )[:100]
         return Response(BedStatusHistorySerializer(history, many=True).data)
+
+    @action(detail=True, methods=["post"])
+    def activate(self, request, pk=None):
+        bed = self.get_object()
+        HospitalAccessService.require_structure_management(bed.get_hospital(), request.user)
+        reason = request.data.get("reason", "Bed activated")
+        bed = bed.activate(user=request.user, reason=reason)
+        return Response(BedDetailSerializer(bed, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"])
+    def deactivate(self, request, pk=None):
+        bed = self.get_object()
+        HospitalAccessService.require_structure_management(bed.get_hospital(), request.user)
+        reason = request.data.get("reason", "Bed deactivated")
+        bed = bed.deactivate(user=request.user, reason=reason)
+        return Response(BedDetailSerializer(bed, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"])
+    def delete_bed(self, request, pk=None):
+        bed = self.get_object()
+        HospitalAccessService.require_structure_management(bed.get_hospital(), request.user)
+        reason = request.data.get("reason", "Bed deleted")
+        bed = bed.soft_delete(user=request.user, reason=reason)
+        return Response(BedDetailSerializer(bed, context={"request": request}).data)
 
 
 class EquipmentTagViewSet(ViewSetHelperMixin, viewsets.ModelViewSet):
