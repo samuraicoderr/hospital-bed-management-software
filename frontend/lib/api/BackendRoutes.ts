@@ -180,15 +180,21 @@ export const BackendRoutes = {
       `${API_VERSION}/admission-requests/${id}/assign_bed/`,
     suggestBeds: (id: string) =>
       `${API_VERSION}/admission-requests/${id}/suggest_beds/`,
+    approve: (id: string) => `${API_VERSION}/admission-requests/${id}/approve/`,
+    cancel: (id: string) => `${API_VERSION}/admission-requests/${id}/cancel/`,
+    reserveBed: (id: string) => `${API_VERSION}/admission-requests/${id}/reserve_bed/`,
 
     admissions: `${API_VERSION}/admissions/`,
     admissionDetail: (id: string) => `${API_VERSION}/admissions/${id}/`,
+    discharge: (id: string) => `${API_VERSION}/admissions/${id}/discharge/`,
 
     transfers: `${API_VERSION}/transfers/`,
     transferDetail: (id: string) => `${API_VERSION}/transfers/${id}/`,
     approveTransfer: (id: string) => `${API_VERSION}/transfers/${id}/approve/`,
     completeTransfer: (id: string) =>
       `${API_VERSION}/transfers/${id}/complete/`,
+    initiateTransfer: (id: string) => `${API_VERSION}/transfers/${id}/initiate/`,
+    rejectTransfer: (id: string) => `${API_VERSION}/transfers/${id}/reject/`,
   },
 
   /* =========================

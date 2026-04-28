@@ -5,7 +5,7 @@ import LoadingScreen from "../components/loading/LoadingScreen";
 import Sidebar from "../components/layout/Sidebar";
 import TopHeader from "../components/layout/TopHeader";
 import { ProtectedRoute } from "@/lib/api/auth/authContext";
-import { OrganizationProvider, HospitalProvider, DepartmentProvider, WardProvider, PatientProvider } from "@/lib/api/contexts";
+import { OrganizationProvider, HospitalProvider, DepartmentProvider, WardProvider, PatientProvider, AdmissionProvider } from "@/lib/api/contexts";
 import { useHospital } from "@/lib/api/contexts/HospitalContext";
 
 export default function DashboardLayout({
@@ -20,13 +20,15 @@ export default function DashboardLayout({
       <OrganizationProvider>
         <HospitalProvider>
           <PatientProvider>
-            <DashboardLayoutContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
-              <DepartmentProvider>
-                <WardProvider>
-                  {children}
-                </WardProvider>
-              </DepartmentProvider>
-            </DashboardLayoutContent>
+            <AdmissionProvider>
+              <DashboardLayoutContent sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}>
+                <DepartmentProvider>
+                  <WardProvider>
+                    {children}
+                  </WardProvider>
+                </DepartmentProvider>
+              </DashboardLayoutContent>
+            </AdmissionProvider>
           </PatientProvider>
         </HospitalProvider>
       </OrganizationProvider>

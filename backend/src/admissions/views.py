@@ -15,11 +15,12 @@ from src.admissions.models import AdmissionRequest, Admission, Transfer
 from src.admissions.serializers import (
     AdmissionRequestListSerializer, AdmissionRequestDetailSerializer,
     AdmissionRequestCreateSerializer, AdmissionListSerializer,
-    AdmissionDetailSerializer, TransferListSerializer,
-    TransferDetailSerializer, TransferCreateSerializer
+    AdmissionDetailSerializer, AdmissionUpdateSerializer, TransferListSerializer,
+    TransferDetailSerializer, TransferCreateSerializer, TransferUpdateSerializer
 )
 from src.admissions.services import AdmissionService, TransferService
 from src.beds.models import Bed
+from src.beds.services import BedService
 
 
 class AdmissionRequestViewSet(viewsets.ModelViewSet):
@@ -83,6 +84,64 @@ class AdmissionRequestViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=True, methods=["post"])
+    def approve(self, request, pk=None):
+        """Approve an admission request."""
+        admission_request = self.get_object()
+        try:
+            AdmissionService.approve_request(admission_request, request.user)
+            return Response({"status": "approved"})
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=["post"])
+    def cancel(self, request, pk=None):
+        """Cancel an admission request."""
+        admission_request = self.get_object()
+        reason = request.data.get("reason", "")
+        try:
+            AdmissionService.cancel_request(admission_request, request.user, reason)
+            return Response({"status": "cancelled"})
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=["post"])
+    def reserve_bed(self, request, pk=None):
+        """Reserve a bed for this admission request."""
+        admission_request = self.get_object()
+        bed_id = request.data.get("bed_id")
+        reserved_until = request.data.get("reserved_until")
+        reason = request.data.get("reason")
+
+        if not bed_id:
+            return Response(
+                {"error": "bed_id is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        bed = get_object_or_404(Bed, id=bed_id)
+
+        try:
+            AdmissionService.reserve_bed_for_request(
+                admission_request=admission_request,
+                bed=bed,
+                user=request.user,
+                reserved_until=reserved_until,
+                reason=reason,
+            )
+            return Response({"status": "reserved", "bed_id": str(bed.id)})
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=["post"])
     def admit(self, request, pk=None):
         """Convert request to actual admission."""
         admission_request = self.get_object()
@@ -127,6 +186,8 @@ class AdmissionViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "list":
             return AdmissionListSerializer
+        if self.action in ["update", "partial_update"]:
+            return AdmissionUpdateSerializer
         return AdmissionDetailSerializer
 
     def get_queryset(self):
@@ -138,6 +199,20 @@ class AdmissionViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(hospital_id=hospital_id)
 
         return queryset.select_related("patient", "bed", "hospital", "department")
+
+    @action(detail=True, methods=["post"])
+    def discharge(self, request, pk=None):
+        """Discharge an admission."""
+        admission = self.get_object()
+        reason = request.data.get("reason", "")
+        try:
+            AdmissionService.discharge_admission(admission, request.user, reason)
+            return Response({"status": "discharged"})
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class TransferViewSet(viewsets.ModelViewSet):
@@ -155,6 +230,8 @@ class TransferViewSet(viewsets.ModelViewSet):
             return TransferListSerializer
         if self.action == "create":
             return TransferCreateSerializer
+        if self.action in ["update", "partial_update"]:
+            return TransferUpdateSerializer
         return TransferDetailSerializer
 
     def get_queryset(self):
@@ -186,6 +263,20 @@ class TransferViewSet(viewsets.ModelViewSet):
             )
 
     @action(detail=True, methods=["post"])
+    def initiate(self, request, pk=None):
+        """Initiate a transfer request."""
+        transfer = self.get_object()
+
+        try:
+            TransferService.initiate_transfer(transfer, request.user)
+            return Response({"status": "initiated"})
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=["post"])
     def complete(self, request, pk=None):
         """Complete an approved transfer."""
         transfer = self.get_object()
@@ -193,6 +284,21 @@ class TransferViewSet(viewsets.ModelViewSet):
         try:
             TransferService.complete_transfer(transfer, request.user)
             return Response({"status": "completed"})
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        """Reject a transfer request."""
+        transfer = self.get_object()
+        reason = request.data.get("reason", "")
+
+        try:
+            TransferService.reject_transfer(transfer, request.user, reason)
+            return Response({"status": "rejected"})
         except Exception as e:
             return Response(
                 {"error": str(e)},

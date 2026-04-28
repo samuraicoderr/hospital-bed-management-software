@@ -102,6 +102,99 @@ class AdmissionService:
             return admission
 
     @staticmethod
+    def approve_request(admission_request, user):
+        """Approve an admission request."""
+        with transaction.atomic():
+            admission_request.approve(user)
+            AuditService.log_action(
+                action="update",
+                model_name="AdmissionRequest",
+                object_id=str(admission_request.id),
+                user=user,
+                details={"action": "approved"},
+            )
+            return admission_request
+
+    @staticmethod
+    def cancel_request(admission_request, user, reason=""):
+        """Cancel an admission request."""
+        with transaction.atomic():
+            admission_request.status = AdmissionStatus.CANCELLED
+            admission_request.cancelled_by = user
+            admission_request.cancelled_at = timezone.now()
+            admission_request.cancellation_reason = reason or ""
+            admission_request.save(
+                update_fields=[
+                    "status",
+                    "cancelled_by",
+                    "cancelled_at",
+                    "cancellation_reason",
+                    "updated_at",
+                ]
+            )
+            if admission_request.assigned_bed:
+                admission_request.assigned_bed.clear_reservation(
+                    user=user,
+                    reason=f"Admission request {admission_request.id} cancelled",
+                )
+            AuditService.log_action(
+                action="update",
+                model_name="AdmissionRequest",
+                object_id=str(admission_request.id),
+                user=user,
+                details={"action": "cancelled"},
+            )
+            return admission_request
+
+    @staticmethod
+    def reserve_bed_for_request(admission_request, bed, user, reserved_until=None, reason=None):
+        """Reserve a bed for an admission request without assigning it."""
+        with transaction.atomic():
+            from src.beds.services import BedService
+
+            bed = Bed.objects.select_for_update().get(pk=bed.pk)
+            reserved_bed = BedService.reserve_bed(
+                bed=bed,
+                admission_request=admission_request,
+                user=user,
+                reserved_until=reserved_until,
+                reason=reason,
+            )
+            admission_request.reserved_bed = reserved_bed
+            admission_request.reserved_until = reserved_until
+            admission_request.save(update_fields=["reserved_bed", "reserved_until", "updated_at"])
+            AuditService.log_action(
+                action="update",
+                model_name="AdmissionRequest",
+                object_id=str(admission_request.id),
+                user=user,
+                details={"action": "reserved_bed", "bed_id": str(bed.id)},
+            )
+            return admission_request
+
+    @staticmethod
+    def discharge_admission(admission, user, reason=""):
+        """Discharge a patient and release the bed."""
+        with transaction.atomic():
+            admission.status = AdmissionStatus.DISCHARGED
+            admission.discharged_at = timezone.now()
+            admission.discharged_by = user
+            admission.save(update_fields=["status", "discharged_at", "discharged_by", "updated_at"])
+            if admission.bed:
+                admission.bed.release_from_admission(
+                    user=user,
+                    reason=reason or f"Admission {admission.id} discharged",
+                )
+            AuditService.log_action(
+                action="update",
+                model_name="Admission",
+                object_id=str(admission.id),
+                user=user,
+                details={"action": "discharged"},
+            )
+            return admission
+
+    @staticmethod
     def get_admission_queue(hospital, status=None):
         """Get admission queue for hospital."""
         queryset = AdmissionRequest.objects.filter(
@@ -172,6 +265,44 @@ class TransferService:
                 details={"action": "approved"}
             )
 
+            return transfer
+
+    @staticmethod
+    def initiate_transfer(transfer, initiated_by):
+        """Initiate a transfer request."""
+        with transaction.atomic():
+            transfer.initiate(initiated_by)
+            AuditService.log_action(
+                action="update",
+                model_name="Transfer",
+                object_id=str(transfer.id),
+                user=initiated_by,
+                details={"action": "initiated"},
+            )
+            return transfer
+
+    @staticmethod
+    def reject_transfer(transfer, rejected_by, reason=""):
+        """Reject a transfer request."""
+        with transaction.atomic():
+            transfer.status = TransferStatus.REJECTED
+            transfer.rejected_by = rejected_by
+            transfer.rejected_at = timezone.now()
+            transfer.rejection_reason = reason or ""
+            transfer.save(update_fields=[
+                "status",
+                "rejected_by",
+                "rejected_at",
+                "rejection_reason",
+                "updated_at",
+            ])
+            AuditService.log_action(
+                action="update",
+                model_name="Transfer",
+                object_id=str(transfer.id),
+                user=rejected_by,
+                details={"action": "rejected"},
+            )
             return transfer
 
     @staticmethod

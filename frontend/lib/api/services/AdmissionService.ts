@@ -14,7 +14,11 @@ import {
   BedListItem,
   CreateAdmissionRequest,
   AssignBedRequest,
+  ReserveBedRequest,
   CreateTransferRequest,
+  UpdateTransferRequest,
+  UpdateAdmissionRequest,
+  AdmissionUpdatePayload,
   CreatePatientRequest,
   AdmissionQueueFilters,
   AdmissionQueueStats,
@@ -53,13 +57,28 @@ class AdmissionService {
 
   async updateAdmissionRequest(
     id: string,
-    data: Partial<CreateAdmissionRequest>
+    data: UpdateAdmissionRequest
   ): Promise<AdmissionRequest> {
     const response = await api.patch<AdmissionRequest>(
       BackendRoutes.admissions.requestDetail(id),
       data
     );
     return response.data;
+  }
+
+  async approveAdmissionRequest(id: string): Promise<{ status: string }> {
+    const response = await api.post(BackendRoutes.admissions.approve(id), {});
+    return response.data as { status: string };
+  }
+
+  async cancelAdmissionRequest(id: string, reason?: string): Promise<{ status: string }> {
+    const response = await api.post(BackendRoutes.admissions.cancel(id), { reason });
+    return response.data as { status: string };
+  }
+
+  async reserveBedForRequest(id: string, data: ReserveBedRequest): Promise<{ status: string; bed_id: string }>{
+    const response = await api.post(BackendRoutes.admissions.reserveBed(id), data);
+    return response.data as { status: string; bed_id: string };
   }
 
   async assignBed(id: string, data: AssignBedRequest): Promise<{
@@ -99,6 +118,21 @@ class AdmissionService {
     return response.data;
   }
 
+  async getAdmission(id: string): Promise<Admission> {
+    const response = await api.get<Admission>(BackendRoutes.admissions.admissionDetail(id));
+    return response.data;
+  }
+
+  async updateAdmission(id: string, data: AdmissionUpdatePayload): Promise<Admission> {
+    const response = await api.patch<Admission>(BackendRoutes.admissions.admissionDetail(id), data);
+    return response.data;
+  }
+
+  async dischargeAdmission(id: string, reason?: string): Promise<{ status: string }> {
+    const response = await api.post(BackendRoutes.admissions.discharge(id), { reason });
+    return response.data as { status: string };
+  }
+
   // ─────────────────────────────────────────────
   // Transfers
   // ─────────────────────────────────────────────
@@ -128,13 +162,31 @@ class AdmissionService {
     return response.data;
   }
 
+  async updateTransfer(id: string, data: UpdateTransferRequest): Promise<Transfer> {
+    const response = await api.patch<Transfer>(
+      BackendRoutes.admissions.transferDetail(id),
+      data
+    );
+    return response.data;
+  }
+
   async approveTransfer(id: string): Promise<{ status: string }> {
     const response = await api.post(BackendRoutes.admissions.approveTransfer(id), {});
     return response.data as { status: string };
   }
 
+  async initiateTransfer(id: string): Promise<{ status: string }> {
+    const response = await api.post(BackendRoutes.admissions.initiateTransfer(id), {});
+    return response.data as { status: string };
+  }
+
   async completeTransfer(id: string): Promise<{ status: string }> {
     const response = await api.post(BackendRoutes.admissions.completeTransfer(id), {});
+    return response.data as { status: string };
+  }
+
+  async rejectTransfer(id: string, reason?: string): Promise<{ status: string }> {
+    const response = await api.post(BackendRoutes.admissions.rejectTransfer(id), { reason });
     return response.data as { status: string };
   }
 

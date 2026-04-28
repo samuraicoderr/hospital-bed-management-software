@@ -100,28 +100,33 @@ export interface ClinicalRequirement {
 
 export interface AdmissionRequest {
   id: UUID;
-  patient: Patient;
+  patient?: Patient;
   patient_name?: string;
   patient_mrn?: string;
   admission_source: AdmissionSource;
   admission_source_display: string;
-  request_date: string;
+  request_date?: string;
   requires_isolation: boolean;
   requires_icu: boolean;
   required_bed_type: string;
   clinical_notes: string;
   priority: Priority;
   priority_display: string;
-  preferred_hospital?: HospitalRef;
-  preferred_department?: DepartmentRef;
+  preferred_hospital?: HospitalRef | null;
+  preferred_department?: DepartmentRef | null;
   status: AdmissionStatus;
   status_display: string;
-  reserved_bed?: BedRef;
-  assigned_bed?: BedRef;
-  assigned_by?: string;
-  assigned_at?: string;
-  approved_by?: string;
-  approved_at?: string;
+  reserved_bed?: BedRef | null;
+  reserved_until?: string | null;
+  assigned_bed?: BedRef | null;
+  assigned_bed_code?: string;
+  assigned_by_name?: string | null;
+  assigned_at?: string | null;
+  approved_by_name?: string | null;
+  approved_at?: string | null;
+  cancelled_by_name?: string | null;
+  cancelled_at?: string | null;
+  cancellation_reason?: string | null;
   queue_position?: number;
   waiting_since: string;
   created_at: string;
@@ -152,14 +157,14 @@ export interface BedRef {
 
 export interface Admission {
   id: UUID;
-  patient: Patient;
+  patient?: Patient;
   patient_name?: string;
   patient_mrn?: string;
   bed_code?: string | null;
   bed?: Bed | null;
   admission_request?: UUID;
-  hospital: HospitalRef;
-  department: DepartmentRef;
+  hospital?: HospitalRef;
+  department?: DepartmentRef;
   admission_source: AdmissionSource;
   admission_source_display: string;
   admitted_at: string;
@@ -170,11 +175,15 @@ export interface Admission {
   diagnosis_description?: string;
   clinical_notes?: string;
   is_isolation: boolean;
+  isolation_reason?: string;
   expected_discharge_date?: string;
   discharged_at?: string;
   visit_number?: string;
+  external_visit_id?: string;
   length_of_stay_days?: number;
   length_of_stay_hours?: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -191,24 +200,27 @@ export interface Transfer {
   status_display: string;
   from_hospital: HospitalRef;
   from_department: DepartmentRef;
-  from_bed?: BedRef;
+  from_bed?: BedRef | null;
   to_hospital: HospitalRef;
   to_department: DepartmentRef;
-  to_bed?: BedRef;
-  requested_by: string;
+  to_bed?: BedRef | null;
+  requested_by_name?: string;
   requested_at: string;
   reason: string;
-  approved_by?: string;
-  approved_at?: string;
-  initiated_by?: string;
-  initiated_at?: string;
-  completed_by?: string;
-  completed_at?: string;
+  approved_by_name?: string;
+  approved_at?: string | null;
+  initiated_by_name?: string;
+  initiated_at?: string | null;
+  completed_by_name?: string;
+  completed_at?: string | null;
   transport_mode?: string;
+  accompanying_personnel?: string;
   special_requirements?: string;
-  rejected_by?: string;
-  rejected_at?: string;
-  rejection_reason?: string;
+  rejected_by_name?: string;
+  rejected_at?: string | null;
+  rejection_reason?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // ─────────────────────────────────────────────
@@ -227,8 +239,25 @@ export interface CreateAdmissionRequest {
   department_id?: UUID;
 }
 
+export interface UpdateAdmissionRequest {
+  admission_source?: AdmissionSource;
+  requires_isolation?: boolean;
+  requires_icu?: boolean;
+  required_bed_type?: string;
+  clinical_notes?: string;
+  priority?: Priority;
+  department_id?: UUID;
+  hospital_id?: UUID;
+}
+
 export interface AssignBedRequest {
   bed_id: UUID;
+}
+
+export interface ReserveBedRequest {
+  bed_id: UUID;
+  reserved_until?: string;
+  reason?: string;
 }
 
 export interface CreateTransferRequest {
@@ -239,7 +268,32 @@ export interface CreateTransferRequest {
   to_bed_id?: UUID;
   reason: string;
   transport_mode?: string;
+  accompanying_personnel?: string;
   special_requirements?: string;
+}
+
+export interface UpdateTransferRequest {
+  to_hospital_id?: UUID;
+  to_department_id?: UUID;
+  to_bed_id?: UUID;
+  transport_mode?: string;
+  accompanying_personnel?: string;
+  special_requirements?: string;
+  reason?: string;
+}
+
+export interface AdmissionUpdatePayload {
+  diagnosis_code?: string;
+  diagnosis_description?: string;
+  clinical_notes?: string;
+  is_isolation?: boolean;
+  isolation_reason?: string;
+  isolation_started_at?: string;
+  isolation_ended_at?: string;
+  expected_discharge_date?: string;
+  visit_number?: string;
+  external_visit_id?: string;
+  status?: AdmissionStatus;
 }
 
 export interface CreatePatientRequest {
