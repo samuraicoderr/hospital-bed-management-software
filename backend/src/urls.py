@@ -12,6 +12,7 @@ from drf_spectacular.views import (
 )
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.routers import DefaultRouter
+from django.http import JsonResponse
 
 from src.users.auth import (
     TokenPairView__FirstFactor,
